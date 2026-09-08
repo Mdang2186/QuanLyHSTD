@@ -1,4 +1,4 @@
-﻿using ClosedXML.Excel;
+using ClosedXML.Excel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -93,16 +93,23 @@ namespace Nhom6_QLHoSoTuyenDung.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> BieuDoDiemDanhGia(string? tuKhoa, DateTime? tuNgay, DateTime? denNgay)
+        public async Task<IActionResult> BieuDoXuHuong12Thang(string? tuKhoa, DateTime? tuNgay, DateTime? denNgay, string? trangThai, string? viTriId, string? phongBanId)
         {
-            var data = await _thongKeService.GetBieuDoDanhGiaUngVienAsync(tuKhoa, tuNgay, denNgay);
+            var data = await _thongKeService.GetXuHuongTuyenDung12ThangAsync(tuKhoa, tuNgay, denNgay, trangThai, viTriId, phongBanId);
             return Json(data);
         }
 
         [HttpGet]
-        public async Task<IActionResult> ViTriTuyenThanhCong(string? tuKhoa, DateTime? tuNgay, DateTime? denNgay)
+        public async Task<IActionResult> BieuDoDiemDanhGia(string? tuKhoa, DateTime? tuNgay, DateTime? denNgay, string? trangThai, string? viTriId, string? phongBanId)
         {
-            var data = await _thongKeService.GetViTriTuyenThanhCongAsync(tuKhoa, tuNgay, denNgay);
+            var data = await _thongKeService.GetBieuDoDanhGiaUngVienAsync(tuKhoa, tuNgay, denNgay, trangThai, viTriId, phongBanId);
+            return Json(data);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ViTriTuyenThanhCong(string? tuKhoa, DateTime? tuNgay, DateTime? denNgay, string? trangThai, string? viTriId, string? phongBanId)
+        {
+            var data = await _thongKeService.GetViTriTuyenThanhCongAsync(tuKhoa, tuNgay, denNgay, trangThai, viTriId, phongBanId);
             return PartialView("_ViTriThanhCongPartial", data);
         }
 

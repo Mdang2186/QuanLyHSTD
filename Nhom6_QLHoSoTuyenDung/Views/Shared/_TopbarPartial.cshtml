@@ -1,4 +1,4 @@
-﻿@{
+@{
     var isAuthenticated = User.Identity?.IsAuthenticated ?? false;
     var hoTen = isAuthenticated ? Context.Session.GetString("HoTen") ?? "Người dùng" : "Người dùng";
     var vaiTro = isAuthenticated ? Context.Session.GetString("VaiTro") ?? "Không rõ" : "Không rõ";
@@ -22,13 +22,13 @@
 }
 else
 {
-    <header class="p-3 bg-white shadow-sm d-flex justify-content-between align-items-center" style="margin-left: 230px;">
-        <h4 class="fw-bold m-0 text-dark">@title</h4>
+    <header class="p-3 bg-white shadow-sm d-flex justify-content-between align-items-center" style="margin-left: 230px; z-index: 1030;">
+        <h4 class="fw-bold m-0 text-dark" style="font-size: 1.25rem;">@title</h4>
 
         <div class="dropup position-relative" style="z-index: 1055; width: max-content;">
             <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" style="min-width: 200px;">
                 <div class="avatar-circle text-white text-center fw-bold me-2"
-                     style="width: 36px; height: 36px; line-height: 36px; border-radius: 50%; background-color: #2a9d8f;">
+                     style="width: 36px; height: 36px; line-height: 36px; border-radius: 50%; background-color: #2563eb;">
                     @vietTat
                 </div>
                 <span class="fw-semibold text-dark">@hoTen (@vaiTro)</span>

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Nhom6_QLHoSoTuyenDung.Models.Entities;
 using Nhom6_QLHoSoTuyenDung.Models.Enums;
@@ -196,47 +196,83 @@ public class LichPhongVanService : ILichPhongVanService
     }
 
 
-public async Task<PhongVanDashboardVM> GetDashboardAsync()
+    public async Task<PhongVanDashboardVM> GetDashboardAsync(string? keyword = null, string? trangThai = null, string? viTriId = null, string? phongId = null, DateTime? tuNgay = null, DateTime? denNgay = null)
     {
-        var lich = await _context.LichPhongVans
+        var query = _context.LichPhongVans
             .Include(l => l.UngVien)
             .Include(l => l.ViTriTuyenDung)
             .Include(l => l.PhongPhongVan)
-            .ToListAsync();
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(keyword))
+        {
+            var kw = keyword.Trim().ToLower();
+            query = query.Where(l => (l.UngVien != null && l.UngVien.HoTen.ToLower().Contains(kw)) ||
+                                     (l.ViTriTuyenDung != null && l.ViTriTuyenDung.TenViTri.ToLower().Contains(kw)) ||
+                                     (l.PhongPhongVan != null && l.PhongPhongVan.TenPhong.ToLower().Contains(kw)));
+        }
+
+        if (!string.IsNullOrWhiteSpace(trangThai))
+        {
+            query = query.Where(l => l.TrangThai == trangThai);
+        }
+
+        if (!string.IsNullOrWhiteSpace(viTriId))
+        {
+            query = query.Where(l => l.ViTriId == viTriId);
+        }
+
+        if (!string.IsNullOrWhiteSpace(phongId))
+        {
+            query = query.Where(l => l.PhongPhongVanId == phongId);
+        }
+
+        if (tuNgay.HasValue)
+        {
+            query = query.Where(l => l.ThoiGian >= tuNgay.Value.Date);
+        }
+
+        if (denNgay.HasValue)
+        {
+            query = query.Where(l => l.ThoiGian <= denNgay.Value.Date.AddDays(1).AddTicks(-1));
+        }
+
+        var lich = await query.ToListAsync();
 
         var model = new PhongVanDashboardVM
         {
             TongSoLich = lich.Count,
             DaPhongVan = lich.Count(l => l.TrangThai == TrangThaiPhongVanEnum.HoanThanh.ToString()),
             ChuaPhongVan = lich.Count(l => l.TrangThai != TrangThaiPhongVanEnum.HoanThanh.ToString()),
-            DanhSachLich = lich,
-
-            // ✅ Biểu đồ cột: Vị trí tuyển dụng
-            ViTriLabels = lich
-                .Where(l => l.ViTriTuyenDung != null)
-                .Select(l => l.ViTriTuyenDung.TenViTri)
-                .Distinct()
-                .ToList(),
-
-            ViTriCounts = lich
-                .Where(l => l.ViTriTuyenDung != null)
-                .GroupBy(l => l.ViTriTuyenDung.TenViTri)
-                .Select(g => g.Count())
-                .ToList()
+            DanhSachLich = lich
         };
 
-        // ✅ Biểu đồ tròn: Trạng thái phỏng vấn
+        // ✅ Biểu đồ CỘT ĐỨNG: Vị trí tuyển dụng từ CSDL
+        var viTriGroup = lich
+            .Where(l => l.ViTriTuyenDung != null)
+            .GroupBy(l => l.ViTriTuyenDung.TenViTri)
+            .Select(g => new { Ten = g.Key, SoLuong = g.Count() })
+            .OrderByDescending(x => x.SoLuong)
+            .ToList();
+
+        model.ViTriLabels = viTriGroup.Select(x => x.Ten).ToList();
+        model.ViTriCounts = viTriGroup.Select(x => x.SoLuong).ToList();
+
+        // ✅ Biểu đồ TRÒN: Trạng thái phỏng vấn (Chuẩn hóa tiếng Việt)
         var trangThaiGroup = lich
             .GroupBy(l => l.TrangThai)
+            .Select(g => new {
+                Ten = g.Key == TrangThaiPhongVanEnum.DaLenLich.ToString() ? "Đã lên lịch" :
+                      g.Key == TrangThaiPhongVanEnum.HoanThanh.ToString() ? "Hoàn thành" :
+                      g.Key == TrangThaiPhongVanEnum.Huy.ToString() ? "Hủy" : (g.Key ?? "Chưa rõ"),
+                SoLuong = g.Count()
+            })
+            .OrderByDescending(x => x.SoLuong)
             .ToList();
 
-        model.TrangThaiLabels = trangThaiGroup
-            .Select(g => g.Key ?? "Không xác định")
-            .ToList();
+        model.TrangThaiLabels = trangThaiGroup.Select(x => x.Ten).ToList();
+        model.TrangThaiValues = trangThaiGroup.Select(x => x.SoLuong).ToList();
 
-        model.TrangThaiValues = trangThaiGroup
-            .Select(g => g.Count())
-            .ToList();
         model.LichPhongVanSapToi = await GetLichPhongVanSapToiAsync();
         return model;
     }

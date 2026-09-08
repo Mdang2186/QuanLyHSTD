@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -22,15 +22,24 @@ namespace Nhom6_QLHoSoTuyenDung.Controllers
             _context = context;
         }
 
-        // 1. Dashboard lịch phỏng vấn
-        public async Task<IActionResult> Index()
+        // 1. Dashboard lịch phỏng vấn với bộ lọc đa dạng
+        public async Task<IActionResult> Index(string? keyword, string? trangThai, string? viTriId, string? phongId, DateTime? tuNgay, DateTime? denNgay)
         {
-            var dashboard = await _lichService.GetDashboardAsync();
+            var dashboard = await _lichService.GetDashboardAsync(keyword, trangThai, viTriId, phongId, tuNgay, denNgay);
             var chuaCoLich = await _lichService.GetUngViensChuaCoLichAsync();
             var biHuy = await _lichService.GetUngViensBiHuyLichAsync();
 
             ViewBag.UngViensChuaCoLich = chuaCoLich;
             ViewBag.LichBiHuy = biHuy;
+            ViewBag.PhongBans = await _context.PhongPhongVans.ToListAsync();
+            ViewBag.ViTriList = await _context.ViTriTuyenDungs.ToListAsync();
+
+            ViewBag.CurrentKeyword = keyword;
+            ViewBag.CurrentTrangThai = trangThai;
+            ViewBag.CurrentViTriId = viTriId;
+            ViewBag.CurrentPhongId = phongId;
+            ViewBag.CurrentTuNgay = tuNgay?.ToString("yyyy-MM-dd");
+            ViewBag.CurrentDenNgay = denNgay?.ToString("yyyy-MM-dd");
 
             return View(dashboard);
         }

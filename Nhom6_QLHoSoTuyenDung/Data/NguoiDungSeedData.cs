@@ -1,4 +1,4 @@
-﻿using Nhom6_QLHoSoTuyenDung.Models.Entities;
+using Nhom6_QLHoSoTuyenDung.Models.Entities;
 
 namespace Nhom6_QLHoSoTuyenDung.Data
 {
@@ -13,6 +13,17 @@ namespace Nhom6_QLHoSoTuyenDung.Data
             var nguoiDungs = new List<NguoiDung>
             {
                 // Admin hệ thống
+                new NguoiDung {
+                    NhanVienId = "NV000",
+                    TenDangNhap = "mdang2186",
+                    MatKhau = "123456",
+                    VaiTro = "Admin",
+                    PhongBanId = "PBIT",
+                    HoTen = "Đỗ Công Minh",
+                    Email = "mdang2186@gmail.com",
+                    SoDienThoai = "0372986808",
+                    NgayTao = ngayTao
+                },
                 new NguoiDung {
                     NhanVienId = "NV001",
                     TenDangNhap = "admin",

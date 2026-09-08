@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -27,10 +27,14 @@ namespace Nhom6_QLHoSoTuyenDung.Controllers
         private async Task LoadDropdownsAsync()
         {
             ViewBag.ViTriList = new SelectList(
-     await _context.ViTriTuyenDungs
-         .Where(v => v.TrangThai == "Đang tuyển")
-         .ToListAsync(),
-     "MaViTri", "TenViTri");
+                 await _context.ViTriTuyenDungs
+                     .Where(v => v.TrangThai == "Đang tuyển")
+                     .ToListAsync(),
+                 "MaViTri", "TenViTri");
+                 
+            ViewBag.FilterViTriList = new SelectList(
+                 await _context.ViTriTuyenDungs.ToListAsync(),
+                 "MaViTri", "TenViTri");
             ViewBag.GioiTinhList = new SelectList(
                 Enum.GetValues(typeof(GioiTinhEnum))
                     .Cast<GioiTinhEnum>()
@@ -72,7 +76,7 @@ namespace Nhom6_QLHoSoTuyenDung.Controllers
                 ViTriId = filter.ViTriId,
                 FromDate = filter.FromDate?.ToString("yyyy-MM-dd"),
                 ToDate = filter.ToDate?.ToString("yyyy-MM-dd"),
-                ViTriList = ((SelectList)ViewBag.ViTriList).ToList(),
+                ViTriList = ((SelectList)ViewBag.FilterViTriList).ToList(),
                 GioiTinhList = ((SelectList)ViewBag.GioiTinhList).ToList(),
                 TrangThaiList = Enum.GetValues(typeof(TrangThaiUngVienEnum)) // 🟦 hoặc TrangThaiPhongVanEnum tuỳ form lọc
          .Cast<Enum>()

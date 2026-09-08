@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Nhom6_QLHoSoTuyenDung.Models.Enums;
@@ -23,7 +23,7 @@ namespace Nhom6_QLHoSoTuyenDung.Controllers
             _hoatDongService = hoatDongService;
         }
 
-        public IActionResult Index(string search, string status, string source, string time, int? quarter, int? year)
+        public IActionResult Index(string search, string status, string source, DateTime? startDate, DateTime? endDate)
         {
             var vm = new UngVienDashboardVM();
             var today = DateTime.Today;
@@ -43,27 +43,12 @@ namespace Nhom6_QLHoSoTuyenDung.Controllers
                 baseQuery = baseQuery.Where(u => u.NguonUngTuyen == source);
 
             // Lọc theo thời gian
-            if (!string.IsNullOrEmpty(time))
+            if (startDate.HasValue)
+                baseQuery = baseQuery.Where(u => u.NgayNop >= startDate.Value.Date);
+            if (endDate.HasValue)
             {
-                if (time == "week")
-                    baseQuery = baseQuery.Where(u => u.NgayNop >= startOfWeek);
-                else if (time == "month")
-                    baseQuery = baseQuery.Where(u => u.NgayNop >= new DateTime(today.Year, today.Month, 1));
-                else if (time == "year")
-                    baseQuery = baseQuery.Where(u => u.NgayNop >= new DateTime(today.Year, 1, 1));
-            }
-
-            if (year.HasValue)
-                baseQuery = baseQuery.Where(u => u.NgayNop.HasValue && u.NgayNop.Value.Year == year.Value);
-
-            if (quarter.HasValue)
-            {
-                var startMonth = (quarter.Value - 1) * 3 + 1;
-                var endMonth = startMonth + 2;
-                baseQuery = baseQuery.Where(u =>
-                    u.NgayNop.HasValue &&
-                    u.NgayNop.Value.Month >= startMonth &&
-                    u.NgayNop.Value.Month <= endMonth);
+                var endOfDay = endDate.Value.Date.AddDays(1).AddTicks(-1);
+                baseQuery = baseQuery.Where(u => u.NgayNop <= endOfDay);
             }
 
             // Hiệu quả: tỉ lệ đã tuyển / tổng
@@ -84,43 +69,30 @@ namespace Nhom6_QLHoSoTuyenDung.Controllers
             vm.TongHoSo = query.Count();
 
             // Ứng viên mới
-            if (time == "week")
+            var ungVienMoiQuery = baseQuery.Where(u => u.TrangThai == TrangThaiUngVienEnum.Moi.ToString() && u.NgayNop.HasValue);
+            
+            if (startDate.HasValue)
+                ungVienMoiQuery = ungVienMoiQuery.Where(u => u.NgayNop >= startDate.Value.Date);
+            if (endDate.HasValue)
             {
-                vm.UngVienMoi = baseQuery.Count(u =>
-                    u.TrangThai == TrangThaiUngVienEnum.Moi.ToString() &&
-                    u.NgayNop.HasValue &&
-                    u.NgayNop.Value >= startOfWeek);
+                var endOfDay = endDate.Value.Date.AddDays(1).AddTicks(-1);
+                ungVienMoiQuery = ungVienMoiQuery.Where(u => u.NgayNop <= endOfDay);
             }
-            else if (time == "month")
-            {
-                vm.UngVienMoi = baseQuery.Count(u =>
-                    u.TrangThai == TrangThaiUngVienEnum.Moi.ToString() &&
-                    u.NgayNop.HasValue &&
-                    u.NgayNop.Value >= new DateTime(today.Year, today.Month, 1));
-            }
-            else if (time == "year")
-            {
-                vm.UngVienMoi = baseQuery.Count(u =>
-                    u.TrangThai == TrangThaiUngVienEnum.Moi.ToString() &&
-                    u.NgayNop.HasValue &&
-                    u.NgayNop.Value >= new DateTime(today.Year, 1, 1));
-            }
-            else
-            {
-                vm.UngVienMoi = baseQuery.Count(u => u.TrangThai == TrangThaiUngVienEnum.Moi.ToString());
-            }
+            
+            vm.UngVienMoi = ungVienMoiQuery.Count();
 
             // Lịch phỏng vấn đã hoàn thành
             var lichQuery = _context.LichPhongVans
                 .Include(l => l.UngVien)
                 .Where(l => l.TrangThai == TrangThaiPhongVanEnum.HoanThanh.ToString());
 
-            if (time == "week")
-                lichQuery = lichQuery.Where(l => l.ThoiGian.HasValue && l.ThoiGian.Value >= startOfWeek);
-            else if (time == "month")
-                lichQuery = lichQuery.Where(l => l.ThoiGian.HasValue && l.ThoiGian.Value >= new DateTime(today.Year, today.Month, 1));
-            else if (time == "year")
-                lichQuery = lichQuery.Where(l => l.ThoiGian.HasValue && l.ThoiGian.Value >= new DateTime(today.Year, 1, 1));
+            if (startDate.HasValue)
+                lichQuery = lichQuery.Where(l => l.ThoiGian.HasValue && l.ThoiGian.Value >= startDate.Value.Date);
+            if (endDate.HasValue)
+            {
+                var endOfDay = endDate.Value.Date.AddDays(1).AddTicks(-1);
+                lichQuery = lichQuery.Where(l => l.ThoiGian.HasValue && l.ThoiGian.Value <= endOfDay);
+            }
 
             vm.SoPhongVan = lichQuery.Count();
 

@@ -1,4 +1,4 @@
-﻿@model Nhom6_QLHoSoTuyenDung.Models.ViewModels.Dashboard.UngVienDashboardVM
+@model Nhom6_QLHoSoTuyenDung.Models.ViewModels.Dashboard.UngVienDashboardVM
 @using System.Text.Json
 @using Nhom6_QLHoSoTuyenDung.Models.Enums
 @using Microsoft.AspNetCore.Mvc.Rendering
@@ -33,142 +33,222 @@
 }
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="~/js/chart-colors.js"></script>
 
 <style>
-    body {
-        background: #f9fafb;
-        font-family: 'Inter', sans-serif;
-    }
+    /* ─── Base ─────────────────────────────────── */
+    body { font-family: 'Inter', sans-serif; }
 
-    .pastel {
-        border-radius: 1rem;
-        padding: 1rem;
-        background: white;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-    }
-
-    .pastel-blue {
-        background: #eff6ff;
-    }
-
-    .pastel-purple {
-        background: #f5f3ff;
-    }
-
-    .pastel-yellow {
-        background: #fefce8;
-    }
-
-    .pastel-green {
-        background: #ecfdf5;
-    }
-
-    .circle-avatar {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        background: #6b7280;
-        color: #fff;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-    }
-
+    /* ─── Filter Bar ────────────────────────────── */
     .filter-bar {
         position: sticky;
         top: 0;
-        z-index: 1020;
-        background: #f9fafb;
-        padding-top: 1rem;
-        padding-bottom: 1rem;
-        margin-bottom: 1rem;
-        box-shadow: 0 4px 6px -4px rgba(0,0,0,0.1);
-    }
-
-    .interview-card {
-        border-radius: 0.75rem;
-        border: 1px solid #e5e7eb;
+        z-index: 100;
+        background: #ffffff;
         padding: 1rem;
+        margin-bottom: 1rem;
+        border-radius: 1rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     }
-
-        .interview-card.active {
-            background-color: #e0edff;
-        }
-
-    .interview-time, .interview-date {
-        font-size: 14px;
-        color: #6b7280;
+    .filter-bar .form-control,
+    .filter-bar .form-select {
+        border: 1px solid #e2e8f0;
+        border-radius: .6rem;
+        font-size: .875rem;
+        background: #fff;
+        box-shadow: none;
+        transition: border-color .2s, box-shadow .2s;
     }
-
-    .badge-day {
-        background-color: #6b7280;
-        font-size: 12px;
-        color: white;
-        border-radius: 6px;
-        padding: 0.25rem 0.5rem;
+    .filter-bar .form-control:focus,
+    .filter-bar .form-select:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37,99,235,.12);
     }
-
-    .activity-table th {
+    .btn-search {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: #fff;
+        border: none;
+        border-radius: .6rem;
+        font-size: .875rem;
         font-weight: 600;
-        font-size: 14px;
-        color: #6b7280;
-        border-bottom: 1px solid #e5e7eb;
+        padding: .5rem 1.25rem;
+        transition: opacity .2s, box-shadow .2s;
     }
+    .btn-search:hover { opacity: .9; box-shadow: 0 4px 12px rgba(37,99,235,.3); color:#fff; }
 
-    .activity-table td {
-        padding: 12px 8px;
-        vertical-align: middle;
-        font-size: 15px;
+    /* ─── KPI Cards ─────────────────────────────── */
+    .kpi-card {
+        background: #fff;
+        border-radius: 1rem;
+        padding: 1.25rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,.05);
+        border: none;
+        transition: transform .2s, box-shadow .2s;
     }
-
-    .activity-table tr:not(:last-child) {
-        border-bottom: 1px solid #f3f4f6;
+    .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,.09); }
+    .kpi-icon {
+        width: 52px; height: 52px;
+        border-radius: .75rem;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.4rem; flex-shrink: 0;
     }
+    .kpi-icon.blue   { background: #eff6ff; color: #3b82f6; }
+    .kpi-icon.purple { background: #f5f3ff; color: #8b5cf6; }
+    .kpi-icon.amber  { background: #fffbeb; color: #f59e0b; }
+    .kpi-icon.teal   { background: #ecfdf5; color: #10b981; }
+    .kpi-label { font-size: .78rem; color: #94a3b8; font-weight: 500; margin-bottom: .15rem; text-transform: uppercase; letter-spacing: .04em; }
+    .kpi-value { font-size: 1.7rem; font-weight: 700; color: #1e293b; line-height: 1; }
 
-    .activity-table .badge {
-        font-size: 13px;
-        font-weight: 500;
-        padding: 5px 12px;
-        border-radius: 9999px;
-        background-color: #f3f4f6;
-        color: #374151;
+    /* ─── Panel cards ───────────────────────────── */
+    .panel {
+        background: #fff;
+        border-radius: 1rem;
+        padding: 1.25rem;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,.05);
+        border: none;
+        height: 100%;
     }
-
-    .activity-table tr:hover {
-        background-color: #f9fafb;
+    .panel-title {
+        font-size: .9rem;
+        font-weight: 700;
+        color: #334155;
+        margin-bottom: 1rem;
+        padding-bottom: .6rem;
+        border-bottom: 2px solid #f1f5f9;
+        display: flex; align-items: center; gap: .4rem;
     }
+    .panel-title .dot {
+        width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+    }
+    .dot-blue   { background: #2563eb; }
 
+    /* ─── Scroll area ───────────────────────────── */
     .scroll-area {
-        max-height: 300px;
+        max-height: 280px;
         overflow-y: auto;
-        padding-right: 8px;
+        padding-right: 4px;
+    }
+    .scroll-area::-webkit-scrollbar { width: 4px; }
+    .scroll-area::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    .scroll-area::-webkit-scrollbar-track { background: transparent; }
+
+    /* ─── Candidate row ─────────────────────────── */
+    .candidate-row {
+        display: flex; align-items: center; gap: .75rem;
+        padding: .55rem 0;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    .candidate-row:last-child { border-bottom: none; }
+    .avatar {
+        width: 36px; height: 36px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: .75rem; font-weight: 700; color: #fff; flex-shrink: 0;
+    }
+    .avatar-colors { background: linear-gradient(135deg, #6366f1, #8b5cf6); }
+    .candidate-name { font-size: .875rem; font-weight: 600; color: #1e293b; }
+    .candidate-pos  { font-size: .75rem; color: #94a3b8; }
+    .status-chip {
+        margin-left: auto;
+        font-size: .7rem;
+        font-weight: 600;
+        padding: .2rem .65rem;
+        border-radius: 9999px;
+        background: #f1f5f9;
+        color: #475569;
+        white-space: nowrap;
     }
 
-        .scroll-area::-webkit-scrollbar {
-            width: 6px;
-        }
+    /* ─── Interview card ────────────────────────── */
+    .iv-card {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: .75rem;
+        padding: .85rem 1rem;
+        margin-bottom: .6rem;
+        position: relative;
+        transition: background .2s;
+    }
+    .iv-card.today { background: #eff6ff; border-color: #bfdbfe; }
+    .iv-card-name { font-size: .875rem; font-weight: 600; color: #1e293b; }
+    .iv-card-pos  { font-size: .75rem; color: #64748b; margin-bottom: .3rem; }
+    .iv-card-time { font-size: .75rem; color: #94a3b8; }
+    .day-badge {
+        position: absolute; top: .6rem; right: .6rem;
+        font-size: .65rem; font-weight: 700;
+        padding: .15rem .5rem;
+        border-radius: 9999px;
+        background: #3b82f6; color: #fff;
+    }
+    .btn-join {
+        margin-top: .5rem;
+        width: 100%;
+        padding: .35rem;
+        font-size: .78rem; font-weight: 600;
+        border-radius: .5rem;
+        border: 1.5px solid #3b82f6;
+        color: #3b82f6;
+        background: transparent;
+        transition: background .2s, color .2s;
+    }
+    .btn-join:hover { background: #3b82f6; color: #fff; }
 
-        .scroll-area::-webkit-scrollbar-thumb {
-            background-color: #ccc;
-            border-radius: 4px;
-        }
+    /* ─── Activity table ────────────────────────── */
+    .act-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+    .act-table thead th {
+        font-size: .75rem; font-weight: 600; color: #94a3b8;
+        text-transform: uppercase; letter-spacing: .05em;
+        padding: .4rem .75rem;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    .act-table tbody td {
+        font-size: .845rem; color: #334155;
+        padding: .7rem .75rem;
+        border-bottom: 1px solid #f8fafc;
+        vertical-align: middle;
+    }
+    .act-table tbody tr:last-child td { border-bottom: none; }
+    .act-table tbody tr:hover td { background: #f8fafc; }
+    .act-badge {
+        display: inline-block;
+        font-size: .72rem; font-weight: 600;
+        padding: .25rem .7rem;
+        border-radius: 9999px;
+        background: #f0fdf4; color: #16a34a;
+    }
+    .act-badge.orange { background: #fff7ed; color: #ea580c; }
+    .act-badge.blue   { background: #eff6ff; color: #2563eb; }
+    .act-badge.gray   { background: #f1f5f9; color: #475569; }
 
-        .scroll-area::-webkit-scrollbar-track {
-            background-color: transparent;
-        }
+    /* ─── Section heading ───────────────────────── */
+    .section-label {
+        font-size: .7rem; font-weight: 700;
+        text-transform: uppercase; letter-spacing: .08em;
+        color: #94a3b8; margin-bottom: .75rem;
+    }
+
+    /* ─── View all link ─────────────────────────── */
+    .view-all {
+        font-size: .78rem; color: #2563eb; font-weight: 600;
+        text-decoration: none;
+        transition: color .15s;
+    }
+    .view-all:hover { color: #1d4ed8; text-decoration: underline; }
 </style>
 
-<div class="container py-4">
-    <!-- Bộ lọc -->
+<div class="container-fluid p-2 px-md-3 py-md-3">
+
+    <!-- ── FILTER BAR ──────────────────────────────────────── -->
     <div class="filter-bar">
         <form method="get" class="row g-2 align-items-end">
-            <div class="col-md-4">
-                <input name="search" class="form-control" placeholder="Tìm kiếm ứng viên..." value="@keyword">
+            <div class="col-md-3 col-sm-12">
+                <input name="search" class="form-control" placeholder="🔍 Tìm kiếm..." value="@keyword">
             </div>
-            <div class="col-md-2">
+            <div class="col-md-2 col-6">
                 <select name="status" class="form-select">
                     <option value="">Trạng thái</option>
                     @foreach (var item in GetTrangThaiOptions())
@@ -177,205 +257,261 @@
                     }
                 </select>
             </div>
-            <div class="col-md-2">
+            <div class="col-md-2 col-6">
                 <select name="source" class="form-select">
                     <option value="">Nguồn</option>
-                    <option value="Facebook" selected="@(selectedSource == "Facebook")">Facebook</option>
-                    <option value="LinkedIn" selected="@(selectedSource == "LinkedIn")">LinkedIn</option>
-                    <option value="Website" selected="@(selectedSource == "Website")">Website</option>
+                    <option value="Facebook"  selected="@(selectedSource=="Facebook")">Facebook</option>
+                    <option value="LinkedIn"  selected="@(selectedSource=="LinkedIn")">LinkedIn</option>
+                    <option value="Website"   selected="@(selectedSource=="Website")">Website công ty</option>
                 </select>
             </div>
-            <div class="col-md-2">
-                <select name="time" class="form-select">
-                    <option value="">Thời gian</option>
-                    <option value="week" selected="@(selectedTime == "week")">Tuần</option>
-                    <option value="month" selected="@(selectedTime == "month")">Tháng</option>
-                    <option value="year" selected="@(selectedTime == "year")">Năm</option>
-                </select>
+            <div class="col-md-2 col-6">
+                <input type="date" name="startDate" class="form-control" title="Từ ngày" value="@Context.Request.Query["startDate"]" />
             </div>
-            <div class="col-md-2">
-                <button class="btn btn-primary w-100">Tìm kiếm</button>
+            <div class="col-md-2 col-6">
+                <input type="date" name="endDate" class="form-control" title="Đến ngày" value="@Context.Request.Query["endDate"]" />
+            </div>
+            <div class="col-md-1 col-12">
+                <button type="submit" class="btn-search w-100 px-0">Lọc</button>
             </div>
         </form>
     </div>
 
-    <!-- Thống kê tổng quan -->
+
+
+    <!-- ── CHARTS ROW (3 Charts per row) ──────────────────────────────────────── -->
     <div class="row g-3 mb-4">
-        <div class="col-md-3"><div class="pastel pastel-blue text-center"><h6>Tổng hồ sơ</h6><h3>@Model.TongHoSo</h3></div></div>
-        <div class="col-md-3"><div class="pastel pastel-purple text-center"><h6>Ứng viên mới</h6><h3>@Model.UngVienMoi</h3></div></div>
-        <div class="col-md-3"><div class="pastel pastel-yellow text-center"><h6>Đã phỏng vấn</h6><h3>@Model.SoPhongVan</h3></div></div>
-        <div class="col-md-3"><div class="pastel pastel-green text-center"><h6>Hiệu quả</h6><h3>@Model.HieuQua%</h3></div></div>
+        <!-- Trạng thái ứng viên -->
+        <div class="col-xl-4 col-lg-5">
+            <div class="panel">
+                <div class="panel-title"><span class="dot dot-blue"></span> Trạng thái ứng viên</div>
+                <div style="position: relative; height: 200px; width: 100%;">
+                    <canvas id="barChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <!-- Xu hướng -->
+        <div class="col-xl-5 col-lg-7">
+            <div class="panel">
+                <div class="panel-title"><span class="dot dot-blue"></span> Xu hướng hồ sơ & phỏng vấn</div>
+                <div style="position: relative; height: 200px; width: 100%;">
+                    <canvas id="lineChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <!-- Nguồn ứng viên -->
+        <div class="col-xl-3 col-lg-4">
+            <div class="panel">
+                <div class="panel-title"><span class="dot dot-blue"></span> Nguồn ứng viên</div>
+                <div style="position: relative; height: 200px; width: 100%;">
+                    <canvas id="pieChart"></canvas>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Biểu đồ -->
+    <!-- ── MIDDLE ROW: Ứng viên mới / Lịch ─────────── -->
     <div class="row g-3 mb-4">
-        <div class="col-md-6">
-            <div class="pastel">
-                <h6>Trạng thái ứng viên</h6>
-                <canvas id="barChart"></canvas>
+        <!-- KPI Stacked -->
+        <div class="col-xl-3 col-lg-3">
+            <div class="panel d-flex flex-column h-100">
+                <div class="panel-title"><span class="dot dot-blue"></span> Thống kê nhanh</div>
+                <div class="d-flex flex-column flex-grow-1 justify-content-around mt-2">
+                    <div class="d-flex justify-content-between align-items-center pb-2 border-bottom">
+                        <span class="text-muted small fw-semibold text-uppercase">Tổng hồ sơ</span>
+                        <span class="fs-5 fw-bold text-dark">@Model.TongHoSo</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center pb-2 border-bottom">
+                        <span class="text-muted small fw-semibold text-uppercase">Ứng viên mới</span>
+                        <span class="fs-5 fw-bold text-dark">@Model.UngVienMoi</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center pb-2 border-bottom">
+                        <span class="text-muted small fw-semibold text-uppercase">Đã phỏng vấn</span>
+                        <span class="fs-5 fw-bold text-dark">@Model.SoPhongVan</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center pb-2 border-bottom">
+                        <span class="text-muted small fw-semibold text-uppercase">Hiệu quả tuyển</span>
+                        <span class="fs-5 fw-bold text-dark">@Model.HieuQua%</span>
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="col-md-6">
-            <div class="pastel">
-                <h6>Xu hướng hồ sơ & phỏng vấn</h6>
-                <canvas id="lineChart"></canvas>
-            </div>
-        </div>
-    </div>
 
-    <!-- Ứng viên mới và lịch -->
-    <div class="row g-3 mb-4 align-items-stretch">
-        <div class="col-md-4">
-            <div class="pastel h-100">
-                <h6>Nguồn ứng viên</h6>
-                <canvas id="pieChart"></canvas>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="pastel h-100">
-                <h6>Ứng viên mới</h6>
+        <!-- Ứng viên mới -->
+        <div class="col-xl-5 col-lg-5">
+            <div class="panel">
+                <div class="panel-title"><span class="dot dot-blue"></span> Ứng viên mới nhất</div>
                 <div class="scroll-area">
                     @if (Model.UngVienMoiNhat != null && Model.UngVienMoiNhat.Any())
                     {
-                        foreach (var uv in Model.UngVienMoiNhat)
+                        @foreach (var uv in Model.UngVienMoiNhat)
                         {
                             var trangThai = EnumExtensions.GetEnumFromDisplayName<TrangThaiUngVienEnum>(uv.TrangThai);
-                            <div class="d-flex align-items-center mb-2">
-                                <div class="circle-avatar me-2">@uv.HoTen.Substring(0, 2).ToUpper()</div>
-                                <div>
-                                    <div class="fw-semibold">@uv.HoTen</div>
-                                    <small class="text-muted">@uv.ViTri</small>
+                            var initials = uv.HoTen?.Length >= 2 ? uv.HoTen.Substring(0, 2).ToUpper() : "?";
+                            <div class="candidate-row">
+                                <div class="avatar avatar-colors">@initials</div>
+                                <div style="min-width:0">
+                                    <div class="candidate-name text-truncate">@uv.HoTen</div>
+                                    <div class="candidate-pos text-truncate">@uv.ViTri</div>
                                 </div>
-                                <span class="badge bg-light border ms-auto">@trangThai?.GetDisplayName()</span>
+                                <span class="status-chip">@trangThai?.GetDisplayName()</span>
                             </div>
                         }
                     }
                     else
                     {
-                        <div class="text-muted">Không có ứng viên mới trong tuần này.</div>
+                        <div class="text-muted small">Không có ứng viên mới trong tuần này.</div>
                     }
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="pastel h-100">
-                <h6>Lịch phỏng vấn sắp tới</h6>
+
+        <!-- Lịch phỏng vấn -->
+        <div class="col-xl-4 col-lg-4">
+            <div class="panel">
+                <div class="panel-title"><span class="dot dot-blue"></span> Lịch phỏng vấn sắp tới</div>
                 <div class="scroll-area">
                     @if (Model.LichPhongVanSapToi != null && Model.LichPhongVanSapToi.Any())
                     {
-                        foreach (var l in Model.LichPhongVanSapToi)
+                        @foreach (var l in Model.LichPhongVanSapToi)
                         {
                             DateTime parsedDate;
                             var ngay = DateTime.TryParseExact(l.Ngay, "dd/MM", null, System.Globalization.DateTimeStyles.None, out parsedDate)
-                            ? parsedDate : DateTime.MinValue;
-                            var isToday = ngay.Date == DateTime.Today;
+                                ? parsedDate : DateTime.MinValue;
+                            var isToday    = ngay.Date == DateTime.Today;
                             var isTomorrow = ngay.Date == DateTime.Today.AddDays(1);
-                            <div class="interview-card position-relative @(isToday ? "active" : "") mb-2">
-                                @if (isToday)
-                                {
-                                    <span class="badge-day position-absolute top-0 end-0 m-2">Hôm nay</span>
-                                }
-                                else if (isTomorrow)
-                                {
-                                    <span class="badge-day position-absolute top-0 end-0 m-2">Ngày mai</span>
-                                }
-                                <div class="fw-semibold">@l.HoTen</div>
-                                <div class="text-muted">@l.ViTri</div>
-                                <div class="interview-time">
-                                    <i class="bi bi-clock me-1"></i>@l.Gio - @l.Ngay
-                                </div>
-                                <button class="btn btn-sm btn-primary w-100 mt-2">Tham gia</button>
+                            <div class="iv-card @(isToday ? "today" : "")">
+                                @if (isToday)    { <span class="day-badge">Hôm nay</span> }
+                                else if (isTomorrow) { <span class="day-badge" style="background:#2563eb">Ngày mai</span> }
+                                <div class="iv-card-name">@l.HoTen</div>
+                                <div class="iv-card-pos">@l.ViTri</div>
+                                <div class="iv-card-time">🕐 @l.Gio &nbsp;·&nbsp; @l.Ngay</div>
+                                <button class="btn-join">Tham gia</button>
                             </div>
                         }
                     }
                     else
                     {
-                        <div class="text-muted">Không có lịch phỏng vấn sắp tới.</div>
+                        <div class="text-muted small">Không có lịch phỏng vấn sắp tới.</div>
                     }
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Hoạt động gần đây -->
-    <div class="col-md-12">
-        <div class="p-3 bg-white rounded shadow-sm h-100">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h6 class="mb-0">Hoạt động gần đây</h6>
-                <a href="@Url.Action("Index", "HoatDong")" class="text-primary text-decoration-none small">Xem tất cả</a>
-            </div>
-            <div class="table-responsive">
-                <table class="table table-borderless table-sm activity-table mb-0">
-                    <thead class="text-muted border-bottom">
-                        <tr>
-                            <th>Thời gian</th>
-                            <th>Hoạt động</th>
-                            <th>Ứng viên</th>
-                            <th>Vị trí</th>
-                            <th>Người thực hiện</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if (Model.HoatDongGanDay != null && Model.HoatDongGanDay.Any())
-                        {
-                            foreach (var h in Model.HoatDongGanDay)
-                            {
-                                <tr>
-                                    <td>@h.ThoiGian?.ToString("HH:mm")</td>
-                                    <td><span class="badge">@h.TieuDe</span></td>
-                                    <td>@h.UngVien</td>
-                                    <td>@h.ViTri</td>
-                                    <td>@h.NguoiThucHien</td>
-                                </tr>
-                            }
-                        }
-                        else
+    <!-- ── ACTIVITY TABLE ──────────────────────────────────── -->
+    <div class="panel mb-4">
+        <div class="d-flex align-items-center justify-content-between mb-1">
+            <div class="panel-title mb-0" style="border:none;padding:0"><span class="dot dot-blue"></span> Hoạt động gần đây</div>
+            <a href="@Url.Action("Index","HoatDong")" class="view-all">Xem tất cả →</a>
+        </div>
+        <div style="border-bottom:2px solid #f1f5f9; margin-bottom:.75rem"></div>
+        <div class="table-responsive">
+            <table class="act-table">
+                <thead>
+                    <tr>
+                        <th>Thời gian</th>
+                        <th>Hoạt động</th>
+                        <th>Ứng viên</th>
+                        <th>Vị trí</th>
+                        <th>Người thực hiện</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.HoatDongGanDay != null && Model.HoatDongGanDay.Any())
+                    {
+                        foreach (var h in Model.HoatDongGanDay)
                         {
                             <tr>
-                                <td colspan="5" class="text-muted">Không có hoạt động nào gần đây.</td>
+                                <td><span style="color:#94a3b8;font-size:.8rem">@h.ThoiGian?.ToString("HH:mm")</span></td>
+                                <td><span class="act-badge gray">@h.TieuDe</span></td>
+                                <td>@h.UngVien</td>
+                                <td style="color:#64748b">@h.ViTri</td>
+                                <td>@h.NguoiThucHien</td>
                             </tr>
                         }
-                    </tbody>
-                </table>
-            </div>
+                    }
+                    else
+                    {
+                        <tr><td colspan="5" class="text-muted" style="font-size:.85rem">Không có hoạt động nào gần đây.</td></tr>
+                    }
+                </tbody>
+            </table>
         </div>
     </div>
+
 </div>
 
 <script>
     const trangThaiLabels = @Html.Raw(trangThaiLabels);
     const trangThaiValues = @Html.Raw(trangThaiValues);
-    const nopHoSoData = @Html.Raw(nopHoSo);
-    const phongVanData = @Html.Raw(phongVan);
-    const nguonLabels = @Html.Raw(nguonLabels);
-    const nguonData = @Html.Raw(nguonData);
+    const nopHoSoData     = @Html.Raw(nopHoSo);
+    const phongVanData    = @Html.Raw(phongVan);
+    const nguonLabels     = @Html.Raw(nguonLabels);
+    const nguonData       = @Html.Raw(nguonData);
 
+    const blueTones = ['#1e3a8a', '#1e40af', '#1d4ed8', '#2563eb', '#3b82f6', '#60a5fa', '#93c5fd'];
+
+    // Bar chart
     new Chart(document.getElementById('barChart'), {
         type: 'bar',
         data: {
             labels: trangThaiLabels,
             datasets: [{
                 data: trangThaiValues,
-                backgroundColor: ChartColors.barColors
+                backgroundColor: blueTones.slice(0, 6),
+                borderRadius: 6,
+                borderSkipped: false
             }]
         },
         options: {
+            maintainAspectRatio: false,
             plugins: { legend: { display: false } },
-            scales: { y: { beginAtZero: true } }
+            scales: {
+                y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { size: 11 } } },
+                x: { grid: { display: false }, ticks: { font: { size: 11 } } }
+            }
         }
     });
 
+    // Line chart
     new Chart(document.getElementById('lineChart'), {
         type: 'line',
         data: {
-            labels: ["T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10", "T11", "T12"],
+            labels: ["T1","T2","T3","T4","T5","T6","T7","T8","T9","T10","T11","T12"],
             datasets: [
-                { label: 'Nộp hồ sơ', data: nopHoSoData, borderColor: ChartColors.linePrimary, fill: false },
-                { label: 'Phỏng vấn', data: phongVanData, borderColor: ChartColors.lineSecondary, fill: false }
+                {
+                    label: 'Nộp hồ sơ',
+                    data: nopHoSoData,
+                    borderColor: '#2563eb',
+                    backgroundColor: 'rgba(37,99,235,.1)',
+                    fill: true, tension: 0.4, pointRadius: 3
+                },
+                {
+                    label: 'Phỏng vấn',
+                    data: phongVanData,
+                    borderColor: '#60a5fa',
+                    backgroundColor: 'rgba(96,165,250,.1)',
+                    fill: true, tension: 0.4, pointRadius: 3
+                }
             ]
+        },
+        options: {
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: { font: { size: 12 }, usePointStyle: true, pointStyleWidth: 8, boxHeight: 8 }
+                }
+            },
+            scales: {
+                y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { size: 11 } } },
+                x: { grid: { display: false }, ticks: { font: { size: 11 } } }
+            }
         }
     });
 
+    // Doughnut chart
     if (nguonData && nguonData.length > 0 && nguonLabels.length === nguonData.length) {
         const pieCanvas = document.getElementById('pieChart');
         if (pieCanvas) {
@@ -385,8 +521,20 @@
                     labels: nguonLabels,
                     datasets: [{
                         data: nguonData,
-                        backgroundColor: ChartColors.pieColors
+                        backgroundColor: blueTones.slice(1, 6),
+                        borderWidth: 2,
+                        borderColor: '#fff'
                     }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    cutout: '65%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { font: { size: 11 }, usePointStyle: true, pointStyleWidth: 8, boxHeight: 8 }
+                        }
+                    }
                 }
             });
         }

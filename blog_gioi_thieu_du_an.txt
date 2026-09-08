@@ -1,0 +1,762 @@
+TIÊU ĐỀ: Phân Tích Chi Tiết Dự Án "Website Quản Lý Hồ Sơ Tuyển Dụng" — Từ Bài Toán Thực Tế Đến Hệ Thống Phần Mềm Hoàn Chỉnh
+
+Tác giả: Nhóm 6 — Đỗ Công Minh | Đinh Thị Diễm Quỳnh | Trần Thị Thanh Vân
+Trường: Đại học Kinh tế – Kỹ thuật Công nghiệp | Khoa CNTT | Lớp DHTI16A4HN
+GVHD: Th.S. Phạm Thị Thùy | Hà Nội, tháng 7/2025
+
+---
+
+Xin chào tất cả mọi người!
+
+Mình là thành viên Nhóm 6. Bài viết này là cố gắng của chúng mình để ghi lại toàn bộ hành trình phân tích và xây dựng dự án "Website Quản lý Hồ sơ Tuyển dụng" một cách đầy đủ và chi tiết nhất có thể.
+
+Chúng mình sẽ đi từ lý do chọn đề tài, phân tích nghiệp vụ từng chức năng, mô tả sơ đồ hệ thống, thiết kế cơ sở dữ liệu, rồi cuối cùng là cách hệ thống thực sự được lập trình và tổ chức code. Mục tiêu là giúp bạn đọc, dù là sinh viên IT hay người ngoài ngành, đều có thể hiểu được "cái gì đang xảy ra" trong một phần mềm quản lý nhân sự chuyên nghiệp.
+
+Hãy rót một ly cà phê và cùng mình đi qua từng chương nhé!
+
+=================================================================
+PHẦN I — ĐẶT VẤN ĐỀ
+=================================================================
+
+1.1. Thực Trạng Quản Lý Tuyển Dụng Tại Doanh Nghiệp
+
+Hãy bắt đầu bằng một câu chuyện rất thực. Một phòng nhân sự đang tuyển dụng 5 vị trí cùng lúc. CV đổ về từ email cá nhân của HR, từ Facebook, từ TopCV, từ LinkedIn. Mỗi ngày vài chục hồ sơ mới.
+
+Người nhân sự phải làm gì? Tải từng file PDF về máy. Đọc bằng mắt. Gõ tay thông tin vào Excel — từng cột một: họ tên, email, SĐT, vị trí ứng tuyển, ngày nộp... Khi thấy CV phù hợp, HR lại phải mở email, đính kèm file, gửi cho Trưởng bộ phận xin ý kiến. Trưởng bộ phận bận, email trôi xuống. Ứng viên giỏi chờ hai tuần không có tin, nhận lời từ công ty khác và ra đi. Cuối tháng, Giám đốc hỏi "kênh nào hiệu quả nhất?", HR phải ngồi đếm tay.
+
+Đây không phải tình huống hiếm gặp. Đây là thực tế của rất nhiều doanh nghiệp Việt Nam hiện nay, đặc biệt là khi chưa có hệ thống số hóa chuyên dụng.
+
+Những vấn đề cốt lõi được chúng mình xác định:
+
+→ Vấn đề 1: DỮ LIỆU PHÂN TÁN
+CV đến từ nhiều nguồn, không tập trung. Không ai có cái nhìn tổng thể về tất cả hồ sơ.
+
+→ Vấn đề 2: XỬ LÝ THỦ CÔNG — TỐN THỜI GIAN VÀ DỄ SAI SÓT
+Nhập tay từng hồ sơ, lọc bằng tay, gửi email thủ công. Mỗi bước có nguy cơ mất dữ liệu hoặc nhầm lẫn.
+
+→ Vấn đề 3: GIAO TIẾP NỘI BỘ BỊ TẮT NGHẼN
+HR ↔ Leader giao tiếp qua email thông thường, không có hệ thống theo dõi, dẫn đến chậm trễ và thất lạc thông tin.
+
+→ Vấn đề 4: KHÔNG CÓ BÁO CÁO REAL-TIME
+Không thể biết tức thì hiệu quả tuyển dụng đang ở đâu, kênh nào tốt nhất, vị trí nào đang thiếu người.
+
+1.2. Mục Tiêu Giải Quyết
+
+Từ bốn vấn đề trên, chúng mình xây dựng hệ thống với một mục tiêu duy nhất: TẬP TRUNG HÓA toàn bộ quy trình tuyển dụng vào một nền tảng web duy nhất, nơi mọi dữ liệu, mọi giao tiếp và mọi báo cáo đều có thể truy cập trong vài giây.
+
+Hệ thống phải đáp ứng:
+  ✓ Tiếp nhận và lưu trữ hồ sơ tập trung từ nhiều nguồn.
+  ✓ Phân quyền rõ ràng theo từng vai trò (Admin / HR / Interviewer).
+  ✓ Tự động hóa: gửi email thư mời, nhắc lịch, thông báo kết quả.
+  ✓ Phỏng vấn và đánh giá hoàn toàn trực tuyến — không cần giấy tờ.
+  ✓ Dashboard thống kê trực quan, xuất báo cáo Excel/PDF.
+  ✓ Bảo mật dữ liệu, ghi log mọi hoạt động.
+
+=================================================================
+PHẦN II — PHÂN TÍCH NGHIỆP VỤ
+=================================================================
+
+2.1. Các Tác Nhân Trong Hệ Thống
+
+Để thiết kế hệ thống đúng, bước đầu tiên là xác định: Ai dùng hệ thống? Họ cần làm gì? Giới hạn quyền hạn của họ là gì?
+
+Chúng mình xác định 3 tác nhân chính:
+
+┌─────────────────────────────────────────────────────────────┐
+│ ADMIN (Quản trị viên / Giám đốc nhân sự)                    │
+│ → Người có quyền cao nhất, quản lý hệ thống ở tầm vĩ mô.   │
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│ HR (Nhân viên tuyển dụng)                                   │
+│ → Người vận hành chính, xử lý hồ sơ từ đầu đến cuối.       │
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│ INTERVIEWER (Người phỏng vấn / Leader / Ban chuyên môn)     │
+│ → Người đánh giá năng lực, chỉ tham gia giai đoạn cuối.    │
+└─────────────────────────────────────────────────────────────┘
+
+
+2.2. Phân Tích Nghiệp Vụ Chi Tiết Theo Từng Vai Trò
+
+─────────────────────────────────────
+2.2.1. Nghiệp Vụ Của ADMIN
+─────────────────────────────────────
+
+NGHIỆP VỤ A — Quản lý tài khoản và phân quyền:
+Admin là người duy nhất có thể tạo tài khoản mới cho nhân viên trong hệ thống.
+
+Quy trình cụ thể:
+  Bước 1: Admin đăng nhập → vào mục "Quản lý người dùng".
+  Bước 2: Chọn "Thêm tài khoản" → nhập họ tên, username, vai trò (HR/Interviewer), phòng ban.
+  Bước 3: Nhấn "Lưu" → Hệ thống tạo tài khoản và gửi thông tin đăng nhập qua email tự động.
+  Bước 4: Với tài khoản đang hoạt động: Admin có thể "Khóa tài khoản" hoặc "Đặt lại mật khẩu".
+
+Ràng buộc nghiệp vụ:
+  - Nếu username đã tồn tại → hệ thống báo lỗi.
+  - Admin KHÔNG được xóa tài khoản đã có dữ liệu liên quan (VD: đã tạo lịch phỏng vấn, đã chấm điểm). Chỉ được khóa.
+  - Hệ thống ghi log mọi thay đổi quyền để kiểm tra bảo mật.
+
+NGHIỆP VỤ B — Phân quyền truy cập theo module:
+Mỗi vai trò được phép truy cập đúng những trang thuộc phạm vi của mình:
+  - Admin: Toàn quyền truy cập mọi module.
+  - HR: Truy cập module Ứng viên, Lịch phỏng vấn, Vị trí tuyển dụng, Thống kê cơ bản.
+  - Interviewer: CHỈ truy cập Dashboard cá nhân, Lịch phỏng vấn được phân công và trang Đánh giá.
+
+NGHIỆP VỤ C — Xem báo cáo tổng hợp và sao lưu dữ liệu:
+  - Admin xem biểu đồ tổng hợp toàn công ty, xuất báo cáo định kỳ (ngày/tuần/tháng/quý).
+  - Admin thực hiện sao lưu dữ liệu định kỳ và phục hồi khi cần — chức năng này yêu cầu xác thực 2 bước.
+
+─────────────────────────────────────
+2.2.2. Nghiệp Vụ Của HR
+─────────────────────────────────────
+
+NGHIỆP VỤ A — Tiếp nhận và nhập hồ sơ ứng viên:
+
+Đây là nghiệp vụ xuất phát điểm. HR nhận CV từ nhiều kênh và đẩy lên hệ thống.
+
+Cách thức nhập liệu:
+  - Nhập từng hồ sơ: HR click "Thêm hồ sơ" → điền form với các trường: Họ tên, Ngày sinh, Email, SĐT, Kinh nghiệm, Vị trí ứng tuyển, Link CV (file upload), Nguồn ứng viên, Ghi chú.
+  - Nhập hàng loạt: Hệ thống hỗ trợ import từ file Excel hoặc JSON, giúp tiết kiệm thời gian khi có nhiều hồ sơ cùng lúc.
+
+Ngay khi lưu, hệ thống:
+  - Tự động gán mã hồ sơ duy nhất (VD: UV-2025-001, UV-2025-002...).
+  - Gắn nhãn theo Vị trí ứng tuyển, Phòng ban và Nguồn ứng viên (Facebook, LinkedIn, TopCV...).
+  - Đặt trạng thái ban đầu: "Chờ duyệt".
+
+Ràng buộc:
+  - Nếu thiếu trường bắt buộc → hệ thống báo lỗi, không cho lưu.
+  - Nếu file CV sai định dạng (không phải PDF/DOCX) → hệ thống từ chối.
+
+NGHIỆP VỤ B — Sàng lọc và phân loại hồ sơ (Screening):
+
+Sau khi có hồ sơ, HR thực hiện sàng lọc theo tiêu chí:
+  - Bộ lọc đa điều kiện: Bằng cấp tối thiểu, số năm kinh nghiệm, kỹ năng bắt buộc, nguồn ứng viên, ngày nộp...
+  - Kết hợp nhiều bộ lọc cùng lúc để thu hẹp danh sách.
+
+Với mỗi hồ sơ sau khi xem xét, HR gán một trong 3 trạng thái:
+
+  TRẠNG THÁI 1: "ĐẠT SƠ LOẠI" 
+  → Hồ sơ đủ điều kiện cơ bản. Chuyển sang bước "Chờ phỏng vấn".
+
+  TRẠNG THÁI 2: "THIẾU THÔNG TIN"
+  → Hệ thống tự động soạn và gửi email yêu cầu ứng viên bổ sung hồ sơ (trong vòng 5 ngày).
+  → Nếu quá 5 ngày không phản hồi → hệ thống gắn cờ cảnh báo hoặc tự động loại.
+
+  TRẠNG THÁI 3: "KHÔNG ĐẠT"
+  → HR bắt buộc phải nhập lý do từ chối.
+  → Hồ sơ được chuyển vào "Kho hồ sơ lưu trữ" (giữ 6–12 tháng, không bị xóa hoàn toàn).
+  → Ràng buộc: Không được bỏ trống trạng thái khi duyệt hồ sơ.
+
+NGHIỆP VỤ C — Tạo và quản lý lịch phỏng vấn:
+
+Khi có ứng viên đạt sơ loại, HR lên lịch phỏng vấn ngay trên hệ thống:
+
+Quy trình:
+  Bước 1: Chọn ứng viên cần phỏng vấn → Click "Tạo lịch phỏng vấn".
+  Bước 2: Điền form lịch: Ngày giờ, Hình thức (Trực tiếp/Online), Phòng phỏng vấn, Người phỏng vấn phụ trách.
+  Bước 3: Click "Xác nhận".
+  Bước 4 (Tự động): Hệ thống gửi email thư mời đến ứng viên (kèm thời gian, địa điểm, người liên hệ).
+  Bước 4 (Tự động): Hệ thống gửi nhắc lịch đến Leader trước 1 ngày.
+
+Tính năng nâng cao:
+  - Kiểm tra trùng lịch: Hệ thống tự động cảnh báo nếu Leader hoặc phòng phỏng vấn bị đặt hai lịch cùng giờ.
+  - Email cá nhân hóa: Nội dung thư mời có thể tùy chỉnh theo từng vị trí.
+
+Trạng thái lịch phỏng vấn:
+  - "Đã lên lịch" (xanh lá): Lịch đã được tạo, đang chờ diễn ra.
+  - "Hoàn thành" (xanh dương): Buổi phỏng vấn đã xảy ra, đang chờ đánh giá.
+  - "Hủy" (đỏ): Lịch đã bị hủy (do ứng viên từ chối, hoặc Leader bận).
+
+NGHIỆP VỤ D — Thông báo kết quả tuyển dụng:
+
+Sau khi Leader gửi đánh giá, HR tổng hợp và ra quyết định cuối cùng:
+
+  → Trúng tuyển: Hệ thống tạo Thư mời nhận việc dạng PDF và gửi tự động.
+  → Không đạt: Hệ thống gửi Thư cảm ơn kèm lý do lịch sự.
+  → Từ chối nhận việc (ứng viên từ chối): HR cập nhật trạng thái "Từ chối".
+  → Tạm hoãn: Hồ sơ được giữ lại để xem xét sau.
+
+Ràng buộc quan trọng:
+  - Mọi thay đổi trạng thái hồ sơ đều được ghi log (ai thay đổi, lúc mấy giờ).
+  - Không được chỉnh sửa kết quả sau 3 ngày đã gửi thông báo.
+  - Hồ sơ cũ hơn 12 tháng sẽ được hệ thống cảnh báo để HR gia hạn hoặc xóa.
+
+NGHIỆP VỤ E — Quản lý vị trí tuyển dụng:
+
+HR/Admin có thể tạo và quản lý các "Job" đang mở:
+  - Tạo mới: Nhập tên vị trí, phòng ban, số lượng cần tuyển, kỹ năng yêu cầu, ngày tạo.
+  - Cập nhật trạng thái: Đang tuyển / Tạm dừng / Đã đóng — ngay từ danh sách, không cần vào trang chi tiết.
+  - Theo dõi: Mỗi vị trí hiển thị số ứng viên đã nộp / đã đạt / còn thiếu bao nhiêu người.
+
+─────────────────────────────────────
+2.2.3. Nghiệp Vụ Của INTERVIEWER (Leader)
+─────────────────────────────────────
+
+NGHIỆP VỤ A — Xem danh sách ứng viên được phân công:
+
+Khi đăng nhập, Leader thấy ngay trên Dashboard:
+  - Danh sách ứng viên sắp phỏng vấn trong tuần.
+  - Số lượng ứng viên đang chờ mình đánh giá (chưa điền phiếu).
+  - Thông báo nhắc nhở từ HR.
+
+NGHIỆP VỤ B — Điền phiếu đánh giá ứng viên:
+
+Đây là nghiệp vụ quan trọng nhất của Leader. Thay vì dùng giấy tờ, toàn bộ đánh giá được số hóa trên hệ thống.
+
+Phiếu đánh giá online gồm 5 tiêu chí, thang điểm 1–10 cho từng mục:
+
+  ┌──────────────────────────────────┬──────────────────────────────────────────┐
+  │ Tiêu chí đánh giá               │ Mô tả chi tiết                           │
+  ├──────────────────────────────────┼──────────────────────────────────────────┤
+  │ 1. Kỹ năng chuyên môn            │ Kiến thức, kỹ năng kỹ thuật theo vị trí │
+  │ 2. Kỹ năng giao tiếp             │ Diễn đạt rõ ràng, lắng nghe, ứng xử     │
+  │ 3. Thái độ làm việc              │ Nhiệt tình, trung thực, tinh thần trách  │
+  │ 4. Kỹ năng giải quyết vấn đề    │ Tư duy logic, xử lý tình huống           │
+  │ 5. Tinh thần học hỏi             │ Chủ động, cầu tiến, thích nghi nhanh     │
+  └──────────────────────────────────┴──────────────────────────────────────────┘
+
+Sau khi chấm điểm, Leader ghi nhận xét tổng quát và chọn đề xuất:
+  → "Tuyển": Ứng viên phù hợp, đề nghị tiếp nhận.
+  → "Xét thêm": Cần thêm một vòng phỏng vấn.
+  → "Loại": Không phù hợp.
+
+Ràng buộc:
+  - Phải điền đủ 5 tiêu chí mới cho phép lưu.
+  - Sau khi lưu, Leader có 24h để chỉnh sửa nếu phát hiện nhầm lẫn.
+  - Hệ thống ghi lại người đánh giá và thời điểm đánh giá.
+
+─────────────────────────────────────
+2.2.4. Nghiệp Vụ Tìm Kiếm và Thống Kê
+─────────────────────────────────────
+
+Hệ thống cung cấp bộ tìm kiếm đa điều kiện có thể kết hợp:
+
+Tìm kiếm nhanh:
+  - Theo Tên ứng viên / Email / Số điện thoại → Kết quả ngay lập tức.
+
+Bộ lọc nâng cao:
+  - Vị trí ứng tuyển, Phòng ban.
+  - Trạng thái hồ sơ (Chờ duyệt, Đạt, Không đạt, Đang phỏng vấn...).
+  - Nguồn ứng viên (Facebook, LinkedIn, TopCV, Giới thiệu...).
+  - Khoảng thời gian nộp hồ sơ (từ ngày ... đến ngày...).
+  - Số năm kinh nghiệm, kỹ năng.
+
+Thống kê và báo cáo:
+  - Biểu đồ cột: So sánh số lượng hồ sơ theo từng tháng.
+  - Biểu đồ tròn: Tỷ lệ đỗ/trượt toàn công ty, phân bổ nguồn ứng viên.
+  - Biểu đồ đường: Xu hướng tuyển dụng theo thời gian.
+  - Bảng số liệu: Tỷ lệ chuyển đổi từng giai đoạn (nộp hồ sơ → phỏng vấn → trúng tuyển).
+  - Xuất Excel / PDF theo khoảng thời gian tùy chọn.
+
+=================================================================
+PHẦN III — THIẾT KẾ HỆ THỐNG
+=================================================================
+
+3.1. Lựa Chọn Kiến Trúc: Tại Sao Chọn MVC?
+
+Khi thiết kế kiến trúc phần mềm, chúng mình lựa chọn mô hình MVC (Model - View - Controller) trên nền tảng ASP.NET Core MVC. Đây là quyết định được cân nhắc kỹ, và dưới đây là lý do:
+
+  MVC tách biệt rõ ràng 3 thành phần:
+  → MODEL: Đại diện dữ liệu. Ánh xạ trực tiếp với các bảng trong SQL Server.
+  → VIEW: Giao diện hiển thị. Các file .cshtml (HTML + Razor syntax) mà người dùng thấy.
+  → CONTROLLER: Bộ não xử lý. Nhận yêu cầu từ người dùng, gọi dữ liệu từ Model, trả về View phù hợp.
+
+  Lợi ích thực tế:
+  - Khi Quỳnh thiết kế lại giao diện (View), code của Minh ở phần Controller không bị ảnh hưởng.
+  - Khi cần thêm một tính năng mới, chỉ cần thêm 1 Controller và 1 View, không phải sửa lung tung.
+  - Dễ dàng viết Unit Test cho từng Controller một cách độc lập.
+
+3.2. Kiến Trúc Tổng Thể Của Hệ Thống
+
+  [Trình duyệt người dùng]
+        ↕ HTTPS request/response
+  [ASP.NET Core MVC — Web Server]
+        ↕ Entity Framework Core (ORM)
+  [SQL Server Database]
+
+  Luồng xử lý một yêu cầu điển hình:
+  1. Người dùng click "Xem danh sách ứng viên".
+  2. Trình duyệt gửi request GET đến /UngViens/Index.
+  3. UngViensController nhận request, gọi dịch vụ lấy dữ liệu từ CSDL.
+  4. Entity Framework dịch code C# thành câu lệnh SQL, trả về danh sách UngVien.
+  5. Controller truyền dữ liệu vào View.
+  6. View render thành HTML và trả về trình duyệt.
+  7. Người dùng thấy bảng danh sách ứng viên trên màn hình.
+
+3.3. Cấu Trúc Mã Nguồn Chi Tiết
+
+Dự án được tổ chức theo chuẩn MVC với từng thư mục có vai trò rõ ràng:
+
+  /Nhom6_QLHoSoTuyenDung/
+  │
+  ├── /Controllers/            ← Xử lý request và điều hướng
+  │    ├── UngViensController.cs          (Quản lý hồ sơ ứng viên)
+  │    ├── LichPhongVansController.cs     (Quản lý lịch phỏng vấn)
+  │    ├── NguoiDungsController.cs        (Đăng nhập, xác thực, OTP)
+  │    ├── ThongKeController.cs           (Thống kê, biểu đồ)
+  │    ├── NhanViensController.cs         (Quản lý nhân viên nội bộ)
+  │    ├── ViTriTuyenDungsController.cs   (Quản lý vị trí tuyển dụng)
+  │    ├── PhongBansController.cs         (Quản lý phòng ban)
+  │    ├── DanhGiaPhongVansController.cs  (Đánh giá phỏng vấn — Interviewer)
+  │    ├── HoSoLuuTrusController.cs       (Kho hồ sơ lưu trữ)
+  │    ├── HRPhongVanController.cs        (HR xem & điều phối lịch PV)
+  │    └── BaseController.cs              (Base dùng chung: session, thông báo)
+  │    └── /NguoiPhongVan/                (Thư mục riêng cho Interviewer)
+  │         ├── InterviewerDashboardController.cs
+  │         └── DanhGiaPhongVansController.cs
+  │
+  ├── /Models/                 ← Dữ liệu và logic nghiệp vụ
+  │    ├── /Entities/          ← Class ánh xạ với bảng CSDL
+  │    │    ├── UngVien.cs
+  │    │    ├── NhanVien.cs
+  │    │    ├── PhongBan.cs
+  │    │    ├── ViTriTuyenDung.cs
+  │    │    ├── LichPhongVan.cs
+  │    │    ├── DanhGiaPhongVan.cs
+  │    │    ├── NguoiDung.cs
+  │    │    ├── NhanVienThamGiaPhongVan.cs  (Bảng quan hệ N-N)
+  │    │    ├── PhongPhongVan.cs
+  │    │    └── HoSoLuuTru.cs
+  │    ├── /DTOs/              ← Đối tượng truyền dữ liệu import/export
+  │    │    └── UngVienExcelDTO.cs
+  │    ├── /ViewModels/        ← Dữ liệu tổng hợp cho từng màn hình
+  │    │    ├── DashboardNguoiPhongVanViewModel.cs
+  │    │    ├── NhanVienDashboardVM.cs
+  │    │    ├── CandidateVm.cs
+  │    │    └── HoatDongViewModel.cs
+  │    ├── /Enums/             ← Kiểu liệt kê chuẩn hóa dữ liệu
+  │    │    ├── VaiTroNguoiDungEnum.cs
+  │    │    ├── TrangThaiUngVienEnum.cs
+  │    │    ├── NguonUngTuyenEnum.cs
+  │    │    └── KetQuaPhongVanEnum.cs
+  │    └── /Helpers/           ← Lớp hỗ trợ phụ trợ
+  │         ├── EmailHelper.cs         (Gửi email/OTP)
+  │         ├── ExportHelper.cs        (Xuất Excel/Word)
+  │         ├── PaginationHelper.cs    (Phân trang danh sách)
+  │         └── EnumHelper.cs          (Chuyển enum thành text)
+  │
+  ├── /Views/                  ← Giao diện hiển thị (.cshtml)
+  │    ├── /UngViens/
+  │    ├── /LichPhongVans/
+  │    ├── /NguoiDungs/        (Bao gồm trang Đăng nhập)
+  │    ├── /ThongKe/           (Biểu đồ thống kê)
+  │    ├── /InterviewerDashboard/
+  │    └── /Shared/            (Layout, partial view dùng chung)
+  │
+  ├── /Data/                   ← Kết nối và khởi tạo dữ liệu
+  │    ├── AppDbContext.cs      (DbContext chính)
+  │    ├── ungvien1000.json     (1000 ứng viên mẫu)
+  │    └── /SeedData/          (Các lớp khởi tạo dữ liệu ban đầu)
+  │
+  ├── /wwwroot/                ← Tài nguyên tĩnh
+  │    ├── /css/, /js/
+  │    ├── /lib/ (bootstrap, jquery)
+  │    └── /images/, /uploads/
+  │
+  └── appsettings.json         ← Cấu hình kết nối database, email...
+
+3.4. Phân Quyền Truy Cập Chi Tiết (Authorization)
+
+Hệ thống áp dụng phân quyền tại tầng Controller bằng attribute [Authorize]:
+
+  NHÓM QUYỀN ADMIN → Toàn quyền tất cả các Controller.
+
+  NHÓM QUYỀN HR →
+    HomeController, UngViensController, LichPhongVansController,
+    HRPhongVanController, ViTriTuyenDungsController
+
+  NHÓM QUYỀN INTERVIEWER →
+    Chỉ các Controller trong thư mục /NguoiPhongVan/:
+    InterviewerDashboardController, DanhGiaPhongVansController
+
+Ví dụ code phân quyền:
+  [Authorize(Roles = "Admin,HR")]
+  public class UngViensController : BaseController { ... }
+
+  [Authorize(Roles = "Interviewer")]
+  public class DanhGiaPhongVansController : BaseController { ... }
+
+3.5. Sơ Đồ Luồng Dữ Liệu (DFD)
+
+DFD giúp mô tả "dữ liệu đi đâu, từ đâu đến đâu" trong hệ thống.
+
+MỨC NGỮ CẢNH — Bức tranh tổng quát nhất:
+  Hệ thống giao tiếp với 3 tác nhân bên ngoài:
+  ADMIN ↔ [HỆ THỐNG] ↔ HR ↔ [HỆ THỐNG] ↔ INTERVIEWER
+
+  Admin cung cấp: Thông tin tài khoản, cấu hình.
+  Admin nhận về: Báo cáo tổng hợp, nhật ký hệ thống.
+
+  HR cung cấp: Hồ sơ ứng viên, lịch phỏng vấn.
+  HR nhận về: Kết quả đánh giá từ Leader, thống kê.
+
+  Interviewer nhận: Danh sách ứng viên cần phỏng vấn.
+  Interviewer cung cấp: Phiếu đánh giá điểm số và nhận xét.
+
+MỨC ĐỈNH — 5 tiến trình xử lý chính:
+
+  [1.0] Quản lý tài khoản và phân quyền
+    ↕ Kho D1: NguoiDung
+
+  [2.0] Quản lý hồ sơ ứng viên
+    ↕ Kho D2: UngVien
+    ↕ Kho D5: HoSoLuuTru
+
+  [3.0] Quản lý phỏng vấn và đánh giá
+    ↕ Kho D3: LichPhongVan
+    ↕ Kho D4: DanhGia
+
+  [4.0] Quản lý vị trí tuyển dụng
+    ↕ Kho D6: ViTriTuyenDung
+
+  [5.0] Tìm kiếm và thống kê kết quả
+    ↔ Tất cả các kho dữ liệu trên
+
+MỨC DƯỚI ĐỈNH — Ví dụ tiến trình [2.0] chi tiết:
+  2.1: Tiếp nhận hồ sơ → ghi vào D2 (UngVien).
+  2.2: Sàng lọc và phân loại → cập nhật trạng thái trong D2.
+  2.3: Gửi email yêu cầu bổ sung (nếu thiếu thông tin).
+  2.4: Chuyển hồ sơ không đạt sang D5 (HoSoLuuTru).
+
+3.6. Thiết Kế Giao Diện (UX/UI)
+
+Chúng mình thiết kế giao diện theo phương pháp User-Centered Design, sử dụng Canva Code để phác thảo Wireframe và Mockup trước khi code HTML.
+
+Quy trình 5 bước:
+  B1: Tạo Persona (chân dung người dùng) chi tiết cho 3 nhóm vai trò.
+  B2: Xây dựng Wireframe cho các màn hình chính.
+  B3: Thiết kế Mockup chi tiết với màu sắc, bố cục theo nguyên tắc UX/UI hiện đại.
+  B4: Tạo Prototype tương tác và mời 5–7 người dùng thử nghiệm.
+  B5: Thu thập feedback → chỉnh sửa → test lại → chuẩn hóa để code frontend.
+
+Nguyên tắc thiết kế: Tối giản – Rõ ràng – Điều hướng trực quan – Responsive.
+
+GIAO DIỆN CHO ADMIN & HR:
+
+  Trang Dashboard:
+  → Các KPI Card: Tổng ứng viên / Đang chờ / Trúng tuyển / Vị trí đang tuyển.
+  → Biểu đồ phân phối theo trạng thái.
+  → Biểu đồ nguồn ứng viên.
+  → Danh sách lịch phỏng vấn 7 ngày tới.
+  → Thông báo hồ sơ mới chưa xem.
+
+  Trang Quản lý ứng viên:
+  → Bảng danh sách có phân trang.
+  → Bộ lọc đa điều kiện (sidebar bên trái).
+  → Thanh tìm kiếm nhanh phía trên.
+  → Nút "Thêm hồ sơ" và "Import Excel" nổi bật.
+  → Mỗi dòng: nút xem CV nhanh, thay đổi trạng thái inline.
+
+  Trang Lịch phỏng vấn:
+  → Hiển thị dạng lịch tuần (Calendar view).
+  → Màu sắc phân biệt trạng thái: Xanh / Cam / Đỏ.
+  → Form tạo lịch nhanh ngay trên giao diện.
+
+GIAO DIỆN CHO INTERVIEWER (Tối giản nhất):
+
+  Trang Dashboard Leader:
+  → Chỉ hiển thị: Lịch phỏng vấn hôm nay, Số hồ sơ chờ đánh giá, Thông báo nhắc nhở.
+  → Không có menu phức tạp — chỉ những gì Leader cần.
+
+  Trang Đánh giá ứng viên:
+  → Chia đôi màn hình: Trái là CV ứng viên, Phải là Phiếu đánh giá.
+  → 5 thanh trượt (slider) điểm 1–10 cho từng tiêu chí.
+  → Ô nhận xét tổng quát.
+  → 3 nút đề xuất rõ ràng: [TUYỂN] [XÉT THÊM] [LOẠI].
+
+3.7. Thiết Kế Cơ Sở Dữ Liệu Chi Tiết (Mô Hình E-R)
+
+Chúng mình sử dụng SQL Server và áp dụng chuẩn hóa đến 3NF để đảm bảo không có dữ liệu dư thừa và mâu thuẫn.
+
+Hệ thống gồm 9 bảng dữ liệu chính:
+
+════════════════════════════════════
+BẢNG 1: ung_vien (Hồ sơ ứng viên)
+════════════════════════════════════
+Đây là bảng quan trọng nhất. Mỗi dòng = một ứng viên đã nộp hồ sơ.
+
+  ung_vien_id          INT (Khóa chính – tự tăng)
+  ho_ten               VARCHAR(100) – Không null
+  ngay_sinh            DATE
+  email                VARCHAR(100) – Unique
+  sdt                  VARCHAR(20)
+  vi_tri_tuyen_dung_id INT (FK → vi_tri_tuyen_dung.id) – Vị trí ứng tuyển
+  link_cv              VARCHAR(500) – Đường dẫn file CV
+  kinh_nghiem          TEXT
+  thanh_tich           TEXT
+  mo_ta                TEXT
+  trang_thai           VARCHAR(50)  – Chờ duyệt/Đạt/Không đạt/Đang PV...
+  ngay_nop             DATE – Ngày nộp hồ sơ
+  nguon_ung_tuyen      VARCHAR(100) – Facebook/LinkedIn/TopCV/Email...
+
+════════════════════════════════════
+BẢNG 2: vi_tri_tuyen_dung (Vị trí tuyển dụng)
+════════════════════════════════════
+  vi_tri_tuyen_dung_id INT (Khóa chính)
+  ten_vi_tri           VARCHAR(100) – Tên vị trí (VD: "Lập trình viên Java")
+  so_luong_can_tuyen   INT – Số người cần tuyển
+  trang_thai           VARCHAR(50)  – Đang tuyển / Tạm dừng / Đã đóng
+  phong_ban_id         INT (FK → phong_ban.id) – Phòng ban phụ trách
+  ky_nang              TEXT – Kỹ năng yêu cầu
+  ngay_tao             DATE
+
+════════════════════════════════════
+BẢNG 3: lich_phong_van (Lịch phỏng vấn)
+════════════════════════════════════
+Bảng trung gian quan trọng — kết nối Ứng viên, Leader, Phòng và Vị trí.
+
+  lich_phong_van_id        INT (Khóa chính)
+  ung_vien_id              INT (FK → ung_vien) – Ứng viên tham gia
+  vi_tri_id                INT (FK → vi_tri_tuyen_dung) – Vị trí phỏng vấn
+  thoi_gian                DATETIME – Ngày giờ phỏng vấn
+  phong_phong_van_id       INT (FK → phong_phong_van) – Phòng tổ chức
+  nhan_vien_phong_van_id   INT (FK → nhan_vien) – Leader phụ trách
+  trang_thai               VARCHAR(50) – Đã lên lịch / Hoàn thành / Hủy
+  ghi_chu                  TEXT
+
+════════════════════════════════════
+BẢNG 4: danh_gia_phong_van (Phiếu đánh giá)
+════════════════════════════════════
+Lưu kết quả đánh giá của Leader sau mỗi buổi phỏng vấn.
+
+  danh_gia_id          INT (Khóa chính)
+  lich_phong_van_id    INT (FK → lich_phong_van) – Thuộc lịch nào (Quan hệ 1-1)
+  diem_danh_gia        DECIMAL(3,1) – Điểm trung bình tổng hợp
+  nhan_xet             TEXT – Nhận xét chi tiết
+  de_xuat              VARCHAR(50) – "Tuyển / Xét thêm / Loại"
+  ky_nang_chuyen_mon   INT (1–10) – Điểm kỹ năng chuyên môn
+  giao_tiep            INT (1–10) – Điểm kỹ năng giao tiếp
+  thai_do_lam_viec     INT (1–10) – Điểm thái độ làm việc
+  giai_quyet_van_de    INT (1–10) – Điểm giải quyết vấn đề
+  tinh_than_hoc_hoi    INT (1–10) – Điểm tinh thần học hỏi
+  ngay_danh_gia        DATE
+
+════════════════════════════════════
+BẢNG 5: ho_so_luu_tru (Kho hồ sơ lưu trữ)
+════════════════════════════════════
+Thay vì xóa hồ sơ không đạt, hệ thống chuyển sang kho này.
+
+  ho_so_luu_tru_id INT (Khóa chính)
+  ung_vien_id      INT (FK → ung_vien)
+  ly_do            TEXT – Lý do không đạt / lưu trữ
+  thoi_gian        DATETIME – Thời điểm đưa vào kho
+
+════════════════════════════════════
+BẢNG 6: phong_phong_van (Phòng phỏng vấn)
+════════════════════════════════════
+  phong_phong_van_id INT (Khóa chính)
+  ten_phong          VARCHAR(100) – VD: "Phòng A3.1", "Phòng Online Zoom"
+  dia_diem           VARCHAR(200) – Địa chỉ / link online
+  mo_ta              TEXT – Sức chứa, thiết bị sẵn có...
+
+════════════════════════════════════
+BẢNG 7: nhan_vien (Nhân viên công ty)
+════════════════════════════════════
+  ma_nv          INT (Khóa chính)
+  ho_ten         VARCHAR(100)
+  ngay_sinh      DATE
+  chuc_vu        VARCHAR(100)
+  phong_ban_id   INT (FK → phong_ban)
+  email          VARCHAR(100)
+  sdt            VARCHAR(20)
+  ngay_vao_cty   DATE
+  kinh_nghiem    TEXT
+  muc_luong      DECIMAL(15,2)
+
+════════════════════════════════════
+BẢNG 8: nguoi_dung (Tài khoản hệ thống)
+════════════════════════════════════
+  id             INT (Khóa chính)
+  ten_dang_nhap  VARCHAR(50) – Unique
+  mat_khau       VARCHAR(255) – Đã mã hóa (Hash)
+  vai_tro        VARCHAR(20) – "Admin" / "HR" / "Interviewer"
+  phong_ban_id   INT (FK → phong_ban)
+  ho_ten         VARCHAR(100)
+  email          VARCHAR(100)
+  sdt            VARCHAR(20)
+  ngay_tao       DATE
+
+════════════════════════════════════
+BẢNG 9: phong_ban (Phòng ban)
+════════════════════════════════════
+  phong_ban_id INT (Khóa chính)
+  ten_phong    VARCHAR(100) – Phòng IT, Phòng Kinh doanh, Phòng Kế toán...
+  mo_ta        TEXT
+
+QUAN HỆ GIỮA CÁC BẢNG (ER Relationships):
+
+  ung_vien (N) ←→ (1) vi_tri_tuyen_dung
+  → Nhiều ứng viên ứng tuyển vào một vị trí.
+
+  ung_vien (1) ←→ (N) lich_phong_van
+  → Một ứng viên có thể có nhiều lịch phỏng vấn (vòng 1, vòng 2...).
+
+  lich_phong_van (1) ←→ (1) danh_gia_phong_van
+  → Mỗi buổi phỏng vấn có đúng một phiếu đánh giá.
+
+  nhan_vien (N) ←→ (N) lich_phong_van [qua bảng trung gian nhan_vien_tham_gia]
+  → Một Leader có thể phỏng vấn nhiều ứng viên; một buổi có thể có nhiều người phỏng vấn.
+
+  nhan_vien (1) ←→ (1) nguoi_dung
+  → Mỗi nhân viên có đúng một tài khoản đăng nhập.
+
+  vi_tri_tuyen_dung (N) ←→ (1) phong_ban
+  → Nhiều vị trí thuộc một phòng ban.
+
+  ung_vien (1) ←→ (0..1) ho_so_luu_tru
+  → Hồ sơ không đạt mới có bản ghi lưu trữ.
+
+3.8. Mô Hình Dữ Liệu — Database Schema Tóm Lược
+
+  [phong_ban] ←─────── [vi_tri_tuyen_dung] ←─── [ung_vien]
+       ↑                         ↑                     ↑
+       │                         │                     │
+  [nguoi_dung]             [lich_phong_van] ──────────────
+       ↑                    ↕           ↕
+  [nhan_vien] ──────────────    [danh_gia_phong_van]
+       ↕                         ↕
+  [phong_phong_van]      [ho_so_luu_tru]
+
+3.9. Công Nghệ Và Lý Do Lựa Chọn
+
+Dưới đây là bảng tổng hợp toàn bộ công nghệ và thư viện đã sử dụng:
+
+  CÔNG NGHỆ / THƯ VIỆN           │ MỤC ĐÍCH SỬ DỤNG
+  ────────────────────────────────┼──────────────────────────────────────────
+  C# / ASP.NET Core MVC          │ Ngôn ngữ và framework backend chính
+  Entity Framework Core 9.0      │ ORM — thao tác CSDL bằng code C#
+  SQL Server                     │ Hệ quản trị cơ sở dữ liệu quan hệ
+  HTML5 / CSS3 / JavaScript       │ Giao diện người dùng
+  Bootstrap                      │ Responsive layout, thư viện UI
+  ClosedXML 0.105.0              │ Xuất file Excel (báo cáo thống kê)
+  EPPlus 8.0.7                   │ Xử lý Excel nâng cao (biểu đồ, phân tích)
+  Aspose.Words 25.7.0            │ Xuất file Word (thư mời, hợp đồng)
+  FreeSpire.Doc 12.2.0           │ Hỗ trợ xuất văn bản Word nâng cao
+  xunit / Moq / FluentAssertions │ Unit Test — kiểm thử đơn vị
+  Selenium                       │ UI Test — kiểm thử giao diện tự động
+  GitHub                         │ Quản lý phiên bản và làm việc nhóm
+
+3.10. Hướng Dẫn Khởi Chạy Hệ Thống
+
+Để chạy dự án trên máy local, cần:
+  1. Visual Studio 2022 + .NET 8 SDK.
+  2. SQL Server 2019 trở lên.
+  3. Clone repo từ GitHub.
+  4. Cập nhật chuỗi kết nối trong appsettings.json.
+  5. Chạy lệnh: dotnet ef database update để tạo database.
+  6. Khởi động ứng dụng → Seed data tự động chạy khi khởi động lần đầu.
+  7. Đăng nhập với tài khoản Admin mẫu.
+
+=================================================================
+PHẦN IV — SEED DATA VÀ KHỞI TẠO HỆ THỐNG
+=================================================================
+
+Một điểm thú vị là hệ thống có cơ chế tự động tạo dữ liệu ban đầu (Seed Data) ngay khi khởi động lần đầu. Điều này giúp:
+  - Demo sản phẩm cho người dùng ngay lập tức mà không cần nhập tay.
+  - Kiểm thử đầy đủ các tính năng với dữ liệu thực tế.
+
+Thứ tự seed được gọi trong file Program.cs:
+
+  using (var scope = app.Services.CreateScope())
+  {
+      var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+      PhongBanSeedData.Seed(context);         // Tạo phòng ban
+      PhongPhongVanSeedData.Seed(context);    // Tạo phòng phỏng vấn
+      NhanVienSeedData.Seed(context);         // Tạo nhân viên mẫu
+      NguoiDungSeedData.Seed(context);        // Tạo tài khoản Admin/HR/Interviewer
+      ViTriTuyenDungSeedData.Seed(context);   // Tạo vị trí tuyển dụng
+      UngVienSeedData.Seed(context);          // Import 1000 ứng viên từ JSON
+      LichPhongVanSeedData.Seed(context);     // Tạo lịch phỏng vấn mẫu
+      DanhGiaPhongVanSeedData.Seed(context);  // Tạo đánh giá mẫu
+      CapNhatTrangThaiUngVienSauDanhGia.CapNhat(context); // Đồng bộ trạng thái
+      HoSoLuuTruSeedData.Seed(context);      // Tạo kho lưu trữ mẫu
+  }
+
+Dữ liệu mẫu được seed:
+
+  BẢNG             │ DỮ LIỆU ĐƯỢC TẠO
+  ─────────────────┼──────────────────────────────────────────────────────
+  PhongBan         │ Phòng Nhân sự, Phòng Kỹ thuật, Phòng Marketing...
+  ViTriTuyenDung   │ Lập trình viên, Tester, Thiết kế, Business Analyst...
+  NguoiDung        │ 1 Admin, 2 HR, 2 Interviewer (với mật khẩu mẫu)
+  NhanVien         │ Một số nhân viên nội bộ gắn với phòng ban
+  UngVien          │ 1000 ứng viên từ file ungvien1000.json
+  LichPhongVan     │ Một số lịch phỏng vấn có sẵn
+  DanhGiaPhongVan  │ Mẫu đánh giá kết quả Đạt/Trượt
+  PhongPhongVan    │ Phòng A, Phòng B, Phòng C + phòng Online
+
+Đặc biệt, với 1000 ứng viên, file JSON được đọc và import tự động:
+
+  public static void Seed(AppDbContext context)
+  {
+      if (context.UngViens.Any()) return;  // Không seed lại nếu đã có data
+      var jsonPath = Path.Combine(Directory.GetCurrentDirectory(),
+                                  "Data", "ungvien1000.json");
+      var jsonData = File.ReadAllText(jsonPath);
+      var ungViens = JsonSerializer.Deserialize<List<UngVien>>(jsonData);
+      context.UngViens.AddRange(ungViens);
+      context.SaveChanges();
+  }
+
+=================================================================
+PHẦN V — KẾT QUẢ VÀ ĐÁNH GIÁ
+=================================================================
+
+5.1. Những Gì Chúng Mình Đã Làm Được
+
+Sau nhiều tháng nghiên cứu, phân tích và lập trình, "Website Quản lý Hồ sơ Tuyển dụng" của Nhóm 6 đã hoàn thiện với:
+
+  ✓ Hệ thống phân quyền 3 cấp hoạt động ổn định và bảo mật.
+  ✓ Toàn bộ quy trình 7 bước từ tiếp nhận → sàng lọc → lịch PV → đánh giá → kết quả chạy xuyên suốt.
+  ✓ Email tự động gửi đúng thời điểm: thư mời PV, nhắc lịch, thông báo kết quả.
+  ✓ Phiếu đánh giá online với 5 tiêu chí có điểm số chi tiết.
+  ✓ Dashboard thống kê trực quan với đa dạng biểu đồ.
+  ✓ Import hàng loạt CV từ Excel/JSON (demo với 1000 ứng viên).
+  ✓ Giao diện Responsive, tương thích PC và Mobile.
+  ✓ Kho hồ sơ lưu trữ — không mất dữ liệu ứng viên không đạt.
+  ✓ Ghi log toàn bộ thay đổi trạng thái hồ sơ.
+  ✓ Xuất báo cáo Excel/PDF (dùng ClosedXML, Aspose.Words).
+  ✓ Seed data tự động — demo được ngay mà không cần nhập tay.
+
+5.2. Hạn Chế Và Hướng Phát Triển
+
+Mọi sản phẩm đều có giới hạn, và chúng mình cũng không ngoại lệ. Những điểm chưa làm được trong phạm vi đồ án:
+
+  ✗ Chưa tích hợp API với TopCV, VietnamWorks, LinkedIn để đồng bộ CV tự động.
+  ✗ Chưa có module cho ứng viên tự đăng nhập theo dõi hồ sơ.
+  ✗ Chưa triển khai lên Cloud (Azure/AWS), hiện chỉ chạy local.
+  ✗ Chưa áp dụng AI để tự động đọc và chấm điểm CV.
+
+Hướng phát triển tương lai:
+  → Tích hợp API với các nền tảng tuyển dụng lớn.
+  → Xây dựng module AI đề xuất ứng viên phù hợp tự động.
+  → Chatbot giúp ứng viên tra cứu trạng thái hồ sơ.
+  → Triển khai CI/CD lên Azure, hỗ trợ nhiều doanh nghiệp đồng thời.
+  → Ứng dụng Mobile cho Leader đánh giá ngay trên điện thoại.
+
+=================================================================
+PHẦN VI — KẾT LUẬN
+=================================================================
+
+Nhìn lại hành trình từ trang giấy trắng đến một website hoàn chỉnh, chúng mình nhận ra rằng viết code chỉ là phần nhỏ nhất trong công việc. Phần lớn thời gian và công sức dành cho việc hiểu bài toán thực tế, thảo luận về nghiệp vụ, vẽ sơ đồ, thiết kế dữ liệu, làm việc nhóm và kiểm thử.
+
+Hệ thống này giải quyết được bốn vấn đề gốc rễ:
+  → Dữ liệu KHÔNG còn phân tán — tất cả về một chỗ.
+  → Xử lý KHÔNG còn thủ công — tự động hóa phần lớn công đoạn.
+  → Giao tiếp KHÔNG còn tắt nghẽn — Leader và HR làm việc trực tiếp trên cùng hệ thống.
+  → Báo cáo KHÔNG còn mù mờ — mọi số liệu hiện ra real-time trên Dashboard.
+
+Cảm ơn Th.S. Phạm Thị Thùy đã hướng dẫn tận tình trong suốt quá trình.
+Cảm ơn gia đình và bạn bè đã luôn ủng hộ.
+
+Và cảm ơn bạn đã kiên nhẫn đọc hết bài viết này!
+
+Nếu bạn đang xây dựng một dự án tương tự, đang làm đồ án về hệ thống quản lý nhân sự, hoặc muốn tìm hiểu thêm về bất kỳ phần nào trong bài viết, hãy để lại bình luận. Chúng mình rất vui được chia sẻ thêm kinh nghiệm.
+
+Chúc các bạn luôn tò mò, luôn học hỏi và không ngừng sáng tạo!
+
+─── Nhóm 6 — DHTI16A4HN ───
+Đỗ Công Minh | Đinh Thị Diễm Quỳnh | Trần Thị Thanh Vân

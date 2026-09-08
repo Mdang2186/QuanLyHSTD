@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -19,33 +19,38 @@
     <style>
         body {
             overflow-x: hidden;
-            background: radial-gradient(circle at bottom left, rgba(42,157,143,0.05) 0%, white 100%);
-            background-color: #f3fefc;
+            background: #ffffff;
         }
 
         .sidebar {
             width: 230px;
             min-height: 100vh;
-            background-color: #e6f4f1;
+            background-color: #ffffff;
             position: fixed;
             top: 0;
             left: 0;
             transition: all 0.3s;
             box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+            overflow-x: hidden;
         }
 
         .card {
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
         }
             .sidebar .nav-link {
-                color: #333;
+                color: #475569;
+                white-space: nowrap;
+                margin-bottom: 4px;
+                border-radius: 0.5rem;
+                padding: 0.5rem 0.75rem;
+                font-size: 0.85rem;
             }
 
                 .sidebar .nav-link.active,
                 .sidebar .nav-link:hover {
-                    font-weight: bold;
-                    background-color: #cceee7;
-                    color: #2a9d8f;
+                    font-weight: 600;
+                    background-color: #eff6ff;
+                    color: #2563eb;
                 }
 
         .content-wrapper {
@@ -63,7 +68,7 @@
             height: 36px;
             line-height: 36px;
             border-radius: 50%;
-            background-color: #2a9d8f;
+            background-color: #2563eb;
         }
 
         @@media (max-width: 768px) {
@@ -91,9 +96,9 @@
     
     <!-- Sidebar -->
     <div class="sidebar d-flex flex-column p-3" id="sidebarMenu">
-        <div class="d-flex align-items-center mb-3">
+        <div class="d-flex align-items-center mb-4 mt-2 px-2">
             <img src="~/images/lgo.png" alt="CyberFortis" style="height: 32px;" class="me-2" />
-            <span class="fs-5 fw-bold" style="color: #2a9d8f;">CyberFortis</span>
+            <span class="fs-5 fw-bold" style="color: #1e293b; letter-spacing: -0.5px;">Cyber<span style="color:#2563eb">Fortis</span></span>
         </div>
 
         @await Html.PartialAsync("_SidebarPartial")

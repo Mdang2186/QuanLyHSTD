@@ -1,9 +1,14 @@
-﻿@using Nhom6_QLHoSoTuyenDung.Models.ViewModels.NguoiPhongVanVM
+@using Nhom6_QLHoSoTuyenDung.Models.ViewModels.NguoiPhongVanVM
+@using Nhom6_QLHoSoTuyenDung.Models.Entities
 @model List<DaPhongVanVM>
 
 @{
     ViewData["Title"] = "Trạng thái chờ (HR)";
     Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var tongSo = Model.Count;
+    var diemTB = Model.Any(x => x.DiemTB.HasValue) ? Model.Where(x => x.DiemTB.HasValue).Average(x => x.DiemTB!.Value) : 0;
+    var xuatSac = Model.Count(x => x.DiemTB.HasValue && x.DiemTB.Value >= 8.0);
 }
 
 @if (!User.Identity?.IsAuthenticated ?? true)
@@ -20,109 +25,417 @@
     return;
 }
 
-<div class="container-fluid px-4 mt-4">
-    <h3 class="fw-bold text-primary">
-        <i class="bi bi-hourglass-split me-2"></i> Ứng viên cần phỏng vấn lần 2
-    </h3>
-    <p class="text-muted mb-4">
-        Danh sách ứng viên đã được đánh giá và được đề xuất tham gia vòng phỏng vấn tiếp theo
-    </p>
+@section Styles {
+    <style>
+        /* ─── Trạng Thái Chờ Design System (Ocean Blue Tone) ─── */
+        .trangthaicho-container {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: #1e293b;
+            background-color: #ffffff;
+        }
 
-    <div class="row row-cols-1 row-cols-md-2 g-4">
-        @foreach (var item in Model)
-        {
-            <div class="col h-100">
-                <div class="card shadow-sm border-0 rounded-4 h-100 d-flex flex-column">
-                    <div class="card-body d-flex flex-column gap-3 flex-grow-1">
-                        <div class="d-flex justify-content-between">
-                            <div>
-                                <h5 class="fw-bold">@item.TenUngVien</h5>
-                                <div class="text-muted">@item.Email</div>
-                                <div class="text-secondary">@item.ViTri</div>
-                            </div>
-                            <div class="text-end">
-                                <div class="badge bg-info text-white mb-1">Chờ vòng 2</div>
-                                <div class="fs-4 text-success fw-bold">
-                                    @(item.DiemTB.HasValue ? item.DiemTB.Value.ToString("0.0") : "–")
-                                </div>
-                            </div>
-                        </div>
+        /* ─── Sticky Filter Bar ─── */
+        .trangthaicho-filter-bar {
+            position: sticky;
+            top: 0px;
+            z-index: 1020;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.75rem;
+            padding: 0.75rem 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+        }
 
-                        <div class="small text-muted">
-                            <i class="bi bi-calendar-event me-1"></i> @item.ThoiGian.ToString("dd/MM/yyyy HH:mm")
-                        </div>
+        .trangthaicho-filter-bar .form-control,
+        .trangthaicho-filter-bar .form-select {
+            border: 1px solid #cbd5e1;
+            border-radius: 0.5rem;
+            font-size: 0.8125rem;
+            color: #1e293b;
+            background-color: #ffffff;
+            height: 38px;
+            line-height: 1.5;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
 
-                        <div class="comment-placeholder" style="min-height: 45px;">
-                            @if (!string.IsNullOrEmpty(item.NhanXet))
+        .trangthaicho-filter-bar .form-control:focus,
+        .trangthaicho-filter-bar .form-select:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        }
+
+        /* ─── Stat Quick Cards ─── */
+        .stat-glass {
+            position: relative;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.75rem;
+            padding: 0.9rem 1.15rem;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .stat-glass:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.08);
+        }
+
+        .stat-glass.blue   { border-left: 4px solid #2563eb; }
+        .stat-glass.cyan   { border-left: 4px solid #0284c7; }
+        .stat-glass.indigo { border-left: 4px solid #4f46e5; }
+
+        .stat-title {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            color: #64748b;
+        }
+
+        .scrollable-table {
+            max-height: 520px;
+            overflow-y: auto;
+        }
+        .scrollable-table::-webkit-scrollbar {
+            width: 4px;
+        }
+        .scrollable-table::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        .viti-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .viti-dot.blue { background: #2563eb; }
+    </style>
+}
+
+<div class="trangthaicho-container mb-4">
+    <!-- 1. THANH CHỨC NĂNG CỐ ĐỊNH KHI LĂN CHUỘT (STICKY FILTER BAR) -->
+    <div class="trangthaicho-filter-bar">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <!-- Ô tìm kiếm -->
+            <div class="position-relative flex-grow-1" style="min-width: 220px; max-width: 360px;">
+                <i class="bi bi-search position-absolute text-muted" style="left: 12px; top: 50%; transform: translateY(-50%); font-size: .85rem; pointer-events: none; z-index: 5;"></i>
+                <input id="filterKeyword" class="form-control" placeholder="Tìm tên ứng viên, email, nhận xét..." style="font-size: .8125rem; height: 38px; padding-left: 34px!important; border-radius: .5rem; border-color: #cbd5e1;" />
+            </div>
+
+            <!-- Dropdown Vị trí ứng tuyển -->
+            <div style="min-width: 170px;">
+                <select id="filterViTri" class="form-select" style="height: 38px; font-size: .8125rem; border-radius: .5rem; border-color: #cbd5e1;">
+                    <option value="">Tất cả vị trí</option>
+                    @if (ViewBag.ViTriList != null)
+                    {
+                        foreach (var vt in ViewBag.ViTriList as List<ViTriTuyenDung>)
+                        {
+                            <option value="@vt.TenViTri">@vt.TenViTri</option>
+                        }
+                    }
+                </select>
+            </div>
+
+            <!-- Dropdown Mức điểm đánh giá -->
+            <div style="min-width: 170px;">
+                <select id="filterDiem" class="form-select" style="height: 38px; font-size: .8125rem; border-radius: .5rem; border-color: #cbd5e1;">
+                    <option value="">Tất cả mức điểm</option>
+                    <option value="xuat_sac">≥ 8.0 (Xuất sắc)</option>
+                    <option value="kha">7.0 - 7.9 (Khá)</option>
+                    <option value="trung_binh">&lt; 7.0 (Trung bình)</option>
+                </select>
+            </div>
+
+            <!-- Nút bấm thao tác -->
+            <div class="d-flex align-items-center gap-2 ms-auto">
+                <button class="btn btn-primary d-inline-flex align-items-center justify-content-center px-3" id="btnFilterApply" style="background: #2563eb; border: none; font-size: .8125rem; font-weight: 600; border-radius: .5rem; height: 38px; line-height: 1;">
+                    <i class="bi bi-funnel-fill me-1" style="font-size: .8rem;"></i> Lọc
+                </button>
+                <button class="btn btn-outline-secondary d-inline-flex align-items-center justify-content-center px-2.5" id="btnFilterReset" style="font-size: .8125rem; font-weight: 600; border-radius: .5rem; border-color: #cbd5e1; color: #475569; height: 38px; line-height: 1;" title="Đặt lại">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                </button>
+                <button type="button" class="btn btn-outline-secondary d-inline-flex align-items-center justify-content-center px-3 disabled" style="font-size: .8125rem; border-radius: .5rem; border-color: #cbd5e1; height: 38px; line-height: 1;">
+                    <i class="bi bi-download me-1"></i> Xuất
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. THỐNG KÊ NHANH KPI -->
+    <div class="row g-3 mb-3">
+        <!-- Tổng chờ vòng 2 -->
+        <div class="col-md-4">
+            <div class="stat-glass blue d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="icon-box rounded-circle d-flex align-items-center justify-content-center" style="width: 42px; height: 42px; background: #eff6ff; color: #2563eb;">
+                        <i class="bi bi-hourglass-split fs-5"></i>
+                    </div>
+                    <span class="stat-title">ỨNG VIÊN CẦN PV LẦN 2</span>
+                </div>
+                <div class="fs-2 fw-bold text-end" style="color: #2563eb;">@tongSo</div>
+            </div>
+        </div>
+
+        <!-- Điểm trung bình -->
+        <div class="col-md-4">
+            <div class="stat-glass cyan d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="icon-box rounded-circle d-flex align-items-center justify-content-center" style="width: 42px; height: 42px; background: #f0f9ff; color: #0284c7;">
+                        <i class="bi bi-star-fill fs-5"></i>
+                    </div>
+                    <span class="stat-title">ĐIỂM ĐÁNH GIÁ TRUNG BÌNH</span>
+                </div>
+                <div class="fs-2 fw-bold text-end" style="color: #0284c7;">@diemTB.ToString("0.0")</div>
+            </div>
+        </div>
+
+        <!-- Ưu tú >= 8.0 -->
+        <div class="col-md-4">
+            <div class="stat-glass indigo d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="icon-box rounded-circle d-flex align-items-center justify-content-center" style="width: 42px; height: 42px; background: #f5f3ff; color: #4f46e5;">
+                        <i class="bi bi-trophy-fill fs-5"></i>
+                    </div>
+                    <span class="stat-title">ỨNG VIÊN XUẤT SẮC (≥ 8.0)</span>
+                </div>
+                <div class="fs-2 fw-bold text-end" style="color: #4f46e5;">@xuatSac</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. DANH SÁCH BẢNG DẠNG DANH SÁCH (TABLE VIEW CHI TIẾT) -->
+    <div class="bg-white border rounded-3 p-3 shadow-sm">
+        <div class="d-flex align-items-center justify-content-between pb-2 mb-3 border-bottom">
+            <h6 class="phongvan-panel-title m-0">
+                <span class="viti-dot blue"></span> Danh sách ứng viên chờ vòng 2 (@Model.Count)
+            </h6>
+            <span class="text-muted small">Nhấn <b>Chi tiết</b> để xem thông tin đánh giá phỏng vấn và CV</span>
+        </div>
+        <div class="scrollable-table">
+            <table class="table table-hover table-bordered table-sm align-middle mb-0">
+                <thead class="table-light sticky-top">
+                    <tr style="font-size: .8rem; color: #475569;">
+                        <th class="text-center" style="width: 45px;">#</th>
+                        <th>Họ tên ứng viên</th>
+                        <th>Email</th>
+                        <th>Vị trí ứng tuyển</th>
+                        <th class="text-center" style="width: 95px;">Điểm TB V1</th>
+                        <th style="width: 140px;">Thời gian PV V1</th>
+                        <th>Nhận xét vòng 1</th>
+                        <th class="text-center" style="width: 250px;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody style="font-size: .8125rem;">
+                    @{
+                        int stt = 1;
+                        if (Model != null && Model.Any())
+                        {
+                            foreach (var item in Model)
                             {
-                                <div class="bg-light p-2 rounded small h-100">
-                                    <i class="bi bi-chat-left-quote-fill text-primary me-1"></i>
-                                    <span class="fst-italic">"@item.NhanXet"</span>
-                                </div>
+                                var diemVal = item.DiemTB.HasValue ? item.DiemTB.Value : 0;
+                                var linkCvVal = !string.IsNullOrEmpty(item.LinkCV) ? Url.Content(item.LinkCV) : "";
+                                <tr class="candidate-row" 
+                                    data-id="@item.UngVienId"
+                                    data-name="@item.TenUngVien" 
+                                    data-email="@item.Email" 
+                                    data-vitri="@item.ViTri" 
+                                    data-score="@diemVal"
+                                    data-thoigian="@item.ThoiGian.ToString("dd/MM/yyyy HH:mm")"
+                                    data-nhanxet="@(item.NhanXet ?? "")"
+                                    data-linkcv="@linkCvVal">
+                                    <td class="text-center text-muted fw-semibold">@(stt++)</td>
+                                    <td class="fw-bold text-dark">@item.TenUngVien</td>
+                                    <td class="text-muted">@item.Email</td>
+                                    <td class="fw-semibold text-primary">@item.ViTri</td>
+                                    <td class="text-center">
+                                        <span class="badge" style="background: #f0f9ff; color: #0284c7; border: 1px solid #bae6fd; font-size: .82rem; font-weight: 700; padding: .25rem .55rem;">
+                                            @(item.DiemTB.HasValue ? item.DiemTB.Value.ToString("0.0") : "–")
+                                        </span>
+                                    </td>
+                                    <td class="text-muted small">@item.ThoiGian.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td class="text-muted fst-italic small text-truncate" style="max-width: 220px;" title="@item.NhanXet">
+                                        @(string.IsNullOrEmpty(item.NhanXet) ? "Chưa có nhận xét" : item.NhanXet)
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="d-flex justify-content-center gap-1.5">
+                                            <!-- Nút Xem thông tin chi tiết -->
+                                            <button class="btn btn-sm btn-outline-info py-1 px-2 d-inline-flex align-items-center gap-1 btn-view-detail" style="font-size: .75rem; font-weight: 600; border-radius: .4rem;">
+                                                <i class="bi bi-info-circle-fill"></i> Chi tiết
+                                            </button>
+                                            
+                                            <!-- Nút Sắp lịch V2 -->
+                                            <button class="btn btn-sm btn-primary py-1 px-2 d-inline-flex align-items-center gap-1" style="font-size: .75rem; background: #2563eb; border: none; font-weight: 600; border-radius: .4rem;" onclick="moFormTaoLich('@item.UngVienId')">
+                                                <i class="bi bi-calendar-plus"></i> Sắp lịch V2
+                                            </button>
+
+                                            <!-- Nút Xem CV -->
+                                            @if (!string.IsNullOrEmpty(item.LinkCV))
+                                            {
+                                                <button class="btn btn-sm btn-outline-secondary py-1 px-1.5" style="font-size: .75rem; border-radius: .4rem;" onclick="xemCV('@Url.Content(item.LinkCV)')" title="Xem CV ứng viên">
+                                                    <i class="bi bi-file-earmark-pdf text-danger"></i>
+                                                </button>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
                             }
-                        </div>
-
-                        <div class="mt-auto d-flex gap-2">
-                            <button class="btn btn-sm btn-outline-success"
-                                    data-ungvien-id="@item.UngVienId"
-                                    onclick="moFormTaoLich('@item.UngVienId')">
-                                📅 Sắp xếp lịch vòng 2
-                            </button>
-
-                            @if (!string.IsNullOrEmpty(@item.LinkCV))
-                            {
-                                <button class="btn btn-sm btn-outline-danger"
-                                        onclick="xemCV('@Url.Content(@item.LinkCV)')"
-                                        data-bs-toggle="tooltip" title="Xem CV ứng viên">
-                                    <i class="bi bi-file-pdf-fill"></i>
-                                </button>
-                            }
-
+                        }
                         else
                         {
-                            <span class="text-muted">—</span>
+                            <tr>
+                                <td colspan="8" class="text-center py-4 text-muted fst-italic">Không có ứng viên nào đang ở trạng thái chờ.</td>
+                            </tr>
                         }
-                        </div>
-                    </div>
-                </div>
-            </div>
-        }
+                    }
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
-<!-- Modal tạo lịch phỏng vấn -->
-<div class="modal fade" id="modalTaoLich" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Tạo lịch phỏng vấn vòng 2</h5>
+<!-- Modal Chi tiết thông tin ứng viên -->
+<div class="modal fade" id="modalChiTiet" tabindex="-1" aria-labelledby="modalChiTietLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" style="border: none; border-radius: .75rem; box-shadow: 0 10px 25px rgba(0,0,0,0.15);">
+            <div class="modal-header border-bottom-0 pb-0 pt-3 px-4">
+                <h5 class="modal-title fw-bold text-dark fs-6" id="modalChiTietLabel">
+                    <i class="bi bi-person-lines-fill text-primary me-2"></i> Chi tiết hồ sơ & Đánh giá phỏng vấn
+                </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
             </div>
-            <div class="modal-body">
-                <!-- Nội dung form sẽ được load bằng Ajax -->
+            <div class="modal-body px-4 py-3" id="chiTietContentBody">
+                <!-- Nội dung được nạp qua JS -->
             </div>
         </div>
     </div>
 </div>
 
-<!-- Test modal xem CV -->
+<!-- Modal tạo lịch phỏng vấn -->
+<div class="modal fade" id="modalTaoLich" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" style="border: none; border-radius: .75rem; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
+            <div class="modal-header border-bottom-0 pb-0 pt-3 px-4">
+                <h5 class="modal-title fw-bold text-dark fs-6">Tạo lịch phỏng vấn vòng 2</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body px-4 py-3">
+                <!-- Form AJAX -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal xem CV -->
 <div class="modal fade" id="cvModal" tabindex="-1">
     <div class="modal-dialog modal-xl modal-dialog-centered">
-        <div class="modal-content">
+        <div class="modal-content" style="border: none; border-radius: .75rem;">
             <div class="modal-header">
-                <h5 class="modal-title">Xem CV</h5>
+                <h5 class="modal-title fw-bold fs-6">Xem CV Ứng viên</h5>
                 <button class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body p-0">
                 <iframe id="cvViewer" width="100%" height="600px" frameborder="0"></iframe>
             </div>
         </div>
     </div>
 </div>
 
-
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Live Filter JavaScript -->
+    <script>
+        function applyChoFilter() {
+            const keyword = ($('#filterKeyword').val() || '').toLowerCase().trim();
+            const viTri = ($('#filterViTri').val() || '').toLowerCase().trim();
+            const diemRange = $('#filterDiem').val();
+
+            $('.candidate-row').each(function () {
+                const name = ($(this).data('name') || '').toString().toLowerCase();
+                const email = ($(this).data('email') || '').toString().toLowerCase();
+                const itemViTri = ($(this).data('vitri') || '').toString().toLowerCase();
+                const score = parseFloat($(this).data('score') || 0);
+
+                const matchKeyword = !keyword || name.indexOf(keyword) !== -1 || email.indexOf(keyword) !== -1;
+                const matchViTri = !viTri || itemViTri.indexOf(viTri) !== -1;
+                
+                let matchDiem = true;
+                if (diemRange === 'xuat_sac') matchDiem = score >= 8.0;
+                else if (diemRange === 'kha') matchDiem = score >= 7.0 && score < 8.0;
+                else if (diemRange === 'trung_binh') matchDiem = score < 7.0;
+
+                if (matchKeyword && matchViTri && matchDiem) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+        }
+
+        $('#filterKeyword').on('keyup', applyChoFilter);
+        $('#filterViTri').on('change', applyChoFilter);
+        $('#filterDiem').on('change', applyChoFilter);
+        $('#btnFilterApply').on('click', applyChoFilter);
+        $('#btnFilterReset').on('click', function () {
+            $('#filterKeyword').val('');
+            $('#filterViTri').val('');
+            $('#filterDiem').val('');
+            applyChoFilter();
+        });
+    </script>
+
+    <!-- Hàm xem chi tiết ứng viên Popup -->
+    <script>
+        $(document).on('click', '.btn-view-detail', function() {
+            const tr = $(this).closest('tr');
+            const ungVienId = tr.data('id');
+            const ten = tr.data('name') || '';
+            const email = tr.data('email') || '';
+            const vitri = tr.data('vitri') || '';
+            const score = parseFloat(tr.data('score') || 0);
+            const thoiGian = tr.data('thoigian') || '';
+            const nhanXet = tr.data('nhanxet') || '';
+            const linkCV = tr.data('linkcv') || '';
+
+            const html = `
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="p-3 rounded-3 bg-light border">
+                            <div class="text-muted small fw-bold text-uppercase">Thông tin ứng viên</div>
+                            <div class="fw-bold fs-5 text-dark mt-1">${ten}</div>
+                            <div class="text-muted small mt-1"><i class="bi bi-envelope me-1"></i>${email}</div>
+                            <div class="fw-semibold text-primary mt-1" style="font-size: .85rem;"><i class="bi bi-briefcase me-1"></i>Vị trí: ${vitri}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 rounded-3 bg-light border text-end">
+                            <div class="text-muted small fw-bold text-uppercase text-start">Đánh giá Vòng 1</div>
+                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                <span class="badge" style="background: #dbeafe; color: #1e40af; font-weight: 600;">Chờ phỏng vấn vòng 2</span>
+                                <div class="fs-2 fw-bold text-info">${score > 0 ? score.toFixed(1) : '–'}<span class="fs-6 text-muted">/10</span></div>
+                            </div>
+                            <div class="small text-muted mt-1"><i class="bi bi-clock me-1"></i>Thời gian: ${thoiGian}</div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="p-3 rounded-3 bg-light border">
+                            <div class="text-muted small fw-bold text-uppercase mb-1"><i class="bi bi-chat-left-quote me-1 text-primary"></i>Nhận xét từ người phỏng vấn Vòng 1</div>
+                            <div class="fst-italic text-secondary" style="font-size: .88rem; line-height: 1.5;">${nhanXet ? `"${nhanXet}"` : 'Chưa có nhận xét chi tiết.'}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                    ${linkCV ? `<button class="btn btn-outline-secondary btn-sm" onclick="xemCV('${linkCV}')"><i class="bi bi-file-pdf text-danger me-1"></i>Xem CV Ứng viên</button>` : ''}
+                    <button class="btn btn-primary btn-sm fw-semibold" style="background: linear-gradient(135deg, #3b82f6, #2563eb); border: none;" onclick="moFormTaoLich('${ungVienId}')"><i class="bi bi-calendar-plus me-1"></i>Sắp xếp lịch phỏng vấn vòng 2</button>
+                </div>
+            `;
+            $('#chiTietContentBody').html(html);
+            new bootstrap.Modal(document.getElementById('modalChiTiet')).show();
+        });
+    </script>
 
     <script>
         function moFormTaoLich(ungVienId) {
@@ -172,7 +485,6 @@
             });
         }
 
-        // Submit form tạo lịch bằng Ajax
         $(document).on('submit', '#formTaoLich', function (e) {
             e.preventDefault();
             var form = $(this);
@@ -202,16 +514,11 @@
             });
         });
 
-        // Xem CV (dùng modal iframe)
-               function xemCV(link) {
+        function xemCV(link) {
             const viewer = document.getElementById("cvViewer");
             viewer.src = link;
             const modal = new bootstrap.Modal(document.getElementById('cvModal'));
             modal.show();
         }
-                $(document).ready(function () {
-            $('[data-bs-toggle="tooltip"]').tooltip();
-        });
-
     </script>
 }

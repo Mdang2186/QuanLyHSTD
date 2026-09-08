@@ -1,8 +1,6 @@
-﻿@model BieuDoViTriTuyenDungVM
-@using System.Text.Json
+@model BieuDoViTriTuyenDungVM
 @using System.Text.Json
 @using Nhom6_QLHoSoTuyenDung.Models.Entities
-@using Nhom6_QLHoSoTuyenDung.Models.Helpers
 @using Nhom6_QLHoSoTuyenDung.Models.Helpers
 @using Nhom6_QLHoSoTuyenDung.Models.ViewModels.ViTriTuyenDungVM
 @using Nhom6_QLHoSoTuyenDung.Models.Enums
@@ -12,235 +10,432 @@
     ViewData["Title"] = "Vị trí tuyển dụng";
     ViewData["PageTitle"] = "Quản lý vị trí tuyển dụng";
 }
+
 <style>
-    .vi-tri-scroll, .hoat-dong-scroll {
-        max-height: 480px; /* hoặc 100% nếu bạn muốn phụ thuộc parent */
-        overflow-y: auto;
+    /* ─── Vị trí Tuyển dụng Design System ─── */
+    .viti-container {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        color: #1e293b;
+        background-color: #ffffff;
     }
 
-        /* Tuỳ chọn: làm đẹp thanh cuộn */
-        .vi-tri-scroll::-webkit-scrollbar,
-        .hoat-dong-scroll::-webkit-scrollbar {
-            width: 6px;
-        }
+    /* ─── Filter Bar Cố Định (Sticky & Căn Ngang Đều) ─── */
+    .viti-filter-bar {
+        position: sticky;
+        top: 0px;
+        z-index: 1020;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        padding: 0.75rem 1rem;
+        margin-bottom: 0.85rem;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
+    }
 
-        .vi-tri-scroll::-webkit-scrollbar-thumb,
-        .hoat-dong-scroll::-webkit-scrollbar-thumb {
-            background-color: #ccc;
-            border-radius: 4px;
-        }
+    .viti-filter-bar .form-control,
+    .viti-filter-bar .form-select {
+        border: 1px solid #cbd5e1;
+        border-radius: 0.5rem;
+        font-size: 0.8125rem;
+        color: #1e293b;
+        background-color: #ffffff;
+        height: 38px;
+        line-height: 1.5;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .viti-filter-bar .form-control:focus,
+    .viti-filter-bar .form-select:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    /* ─── Horizontal Recruitment Pipeline Chain ─── */
+    .pipeline-chain-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        padding: 0.75rem 1rem;
+        margin-bottom: 0.85rem;
+    }
+
+    .pipeline-step-item {
+        border-radius: 0.65rem;
+        padding: 0.65rem 0.75rem;
+        position: relative;
+        transition: all 0.2s ease;
+    }
+
+    .pipeline-step-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    /* ─── KPI Stacked (Vertical 1/6: Chữ Bên Trái, Số Bên Phải To Rõ) ─── */
+    .viti-kpi-card-vertical {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.65rem;
+        padding: 0.65rem 0.85rem;
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.2s ease;
+    }
+
+    .viti-kpi-card-vertical:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(37, 99, 235, 0.05);
+    }
+
+    .viti-kpi-card-vertical.blue   { border-left: 3px solid #2563eb; }
+    .viti-kpi-card-vertical.teal   { border-left: 3px solid #0284c7; }
+    .viti-kpi-card-vertical.indigo { border-left: 3px solid #4f46e5; }
+    .viti-kpi-card-vertical.sky    { border-left: 3px solid #0369a1; }
+
+    .viti-kpi-title {
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        color: #64748b;
+        line-height: 1.2;
+    }
+
+    .viti-kpi-value {
+        font-size: 1.6rem;
+        font-weight: 800;
+        line-height: 1;
+    }
+
+    /* ─── Panel Layout ─── */
+    .viti-panel {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        padding: 0.85rem 1rem;
+        height: 100%;
+    }
+
+    .viti-panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.65rem;
+        padding-bottom: 0.45rem;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .viti-panel-title {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .viti-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+
+    .viti-dot.blue   { background: #2563eb; }
+    .viti-dot.teal   { background: #0284c7; }
+    .viti-dot.indigo { background: #4f46e5; }
+
+    /* ─── Scroll Area ─── */
+    .vi-tri-scroll, .hoat-dong-scroll {
+        max-height: 380px;
+        overflow-y: auto;
+        padding-right: 4px;
+    }
+
+    .vi-tri-scroll::-webkit-scrollbar,
+    .hoat-dong-scroll::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .vi-tri-scroll::-webkit-scrollbar-thumb,
+    .hoat-dong-scroll::-webkit-scrollbar-thumb {
+        background-color: #cbd5e1;
+        border-radius: 4px;
+    }
+
+    .vi-tri-scroll::-webkit-scrollbar-track,
+    .hoat-dong-scroll::-webkit-scrollbar-track {
+        background: transparent;
+    }
 </style>
 
+<div class="viti-container mb-4">
+    <!-- 1. BỘ LỌC & THAO TÁC CỐ ĐỊNH (STICKY FILTER BAR - CĂN NGANG ĐỀU NHAU) -->
+    <form method="get" asp-action="Index" class="viti-filter-bar">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <!-- Ô tìm kiếm (Biểu tượng căn giữa tuyệt đối) -->
+            <div class="position-relative flex-grow-1" style="min-width: 220px; max-width: 360px;">
+                <i class="bi bi-search position-absolute text-muted" style="left: 12px; top: 50%; transform: translateY(-50%); font-size: .85rem; pointer-events: none; z-index: 5;"></i>
+                <input name="keyword" value="@ViewBag.CurrentKeyword" class="form-control" placeholder="Tìm kiếm vị trí, công việc..." style="font-size: .8125rem; height: 38px; padding-left: 34px!important; border-radius: .5rem; border-color: #cbd5e1;" />
+            </div>
 
-<div class="container-fluid px-4 mt-4">
-    <!-- Nút thêm + modal -->
-    <div class="d-flex justify-content-end mb-3 gap-2">
-        <button class="btn btn-outline-secondary" disabled><i class="bi bi-download me-1"></i> Xuất báo cáo</button>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalThemViTri">
-            <i class="bi bi-plus-lg me-1"></i> Thêm vị trí mới
-        </button>
-    </div>
+            <!-- Dropdown Trạng thái -->
+            <div style="min-width: 150px;">
+                <select name="trangThai" class="form-select" style="height: 38px; font-size: .8125rem; border-radius: .5rem; border-color: #cbd5e1;">
+                    <option value="">Tất cả trạng thái</option>
+                    <option value="DangTuyen" selected="@(ViewBag.CurrentTrangThai == "DangTuyen")">Đang tuyển</option>
+                    <option value="TamDung" selected="@(ViewBag.CurrentTrangThai == "TamDung")">Tạm dừng</option>
+                    <option value="DaDong" selected="@(ViewBag.CurrentTrangThai == "DaDong")">Đã đóng</option>
+                </select>
+            </div>
 
-    <!-- Bộ lọc -->
-    <div class="card p-3 mb-4">
-        <form method="get" asp-action="Index">
-            <div class="row g-2">
-                <div class="col-md-4">
-                    <input name="keyword" class="form-control" placeholder="Tìm kiếm vị trí, công việc..." value="@ViewBag.CurrentKeyword" />
-                </div>
-                <div class="col-md-2">
-                    <select name="trangThai" class="form-select">
-                        <option value="">Tất cả trạng thái</option>
-                        <option value="DangTuyen" selected="@(ViewBag.CurrentTrangThai == "DangTuyen")">Đang tuyển</option>
-                        <option value="TamDung" selected="@(ViewBag.CurrentTrangThai == "TamDung")">Tạm dừng</option>
-                        <option value="DaDong" selected="@(ViewBag.CurrentTrangThai == "DaDong")">Đã đóng</option>
-
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <select name="phongBanId" class="form-select">
-                        <option value="">Tất cả phòng ban</option>
-                        @foreach (var pb in ViewBag.PhongBans as List<PhongBan>)
+            <!-- Dropdown Phòng ban -->
+            <div style="min-width: 160px;">
+                <select name="phongBanId" class="form-select" style="height: 38px; font-size: .8125rem; border-radius: .5rem; border-color: #cbd5e1;">
+                    <option value="">Tất cả phòng ban</option>
+                    @if (ViewBag.PhongBans != null)
+                    {
+                        foreach (var pb in ViewBag.PhongBans as List<PhongBan>)
                         {
                             <option value="@pb.Id" selected="@(ViewBag.CurrentPhongBanId == pb.Id)">@pb.TenPhong</option>
                         }
-                    </select>
-                </div>
-                <div class="col-md-4 text-end">
-                    <button class="btn btn-primary" type="submit">Áp dụng bộ lọc</button>
-                    <a asp-action="Index" class="btn btn-outline-secondary">Đặt lại</a>
-                </div>
+                    }
+                </select>
             </div>
-        </form>
-    </div>
 
-  
-    <!-- Modal thêm vị trí -->
-    <div class="modal fade" id="modalThemViTri" tabindex="-1" aria-labelledby="modalThemViTriLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <form method="post" asp-action="CreatePopup">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="modalThemViTriLabel">Thêm vị trí tuyển dụng</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label">Tên vị trí</label>
-                                <input name="TenViTri" class="form-control" required />
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Phòng ban</label>
-                                <select name="PhongBanId" class="form-select">
-                                    @foreach (var pb in ViewBag.PhongBans as List<PhongBan>)
-                                    {
-                                        <option value="@pb.Id">@pb.TenPhong</option>
-                                    }
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Số lượng cần tuyển</label>
-                                <input name="SoLuongCanTuyen" type="number" class="form-control" required />
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Trạng thái</label>
-                                <select name="TrangThai" class="form-select">
-                                    <option>Đang tuyển</option>
-                                    <option>Tạm dừng</option>
-                                    <option>Đã đóng</option>
-                                </select>
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label">Kỹ năng</label>
-                                <textarea name="KyNang" class="form-control"></textarea>
-                            </div>
+            <!-- Nút bấm căn ngang hàng -->
+            <div class="d-flex align-items-center gap-2 ms-auto">
+                <button class="btn btn-primary d-inline-flex align-items-center justify-content-center px-3" type="submit" style="background: #2563eb; border: none; font-size: .8125rem; font-weight: 600; border-radius: .5rem; height: 38px; line-height: 1;">
+                    <i class="bi bi-funnel-fill me-1" style="font-size: .8rem;"></i> Lọc
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary d-inline-flex align-items-center justify-content-center px-2.5" style="font-size: .8125rem; font-weight: 600; border-radius: .5rem; border-color: #cbd5e1; color: #475569; height: 38px; line-height: 1;" title="Đặt lại">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                </a>
+                <button type="button" class="btn btn-outline-secondary d-inline-flex align-items-center justify-content-center px-3 disabled" style="font-size: .8125rem; border-radius: .5rem; border-color: #cbd5e1; height: 38px; line-height: 1;">
+                    <i class="bi bi-download me-1"></i> Xuất
+                </button>
+                <button type="button" class="btn btn-primary d-inline-flex align-items-center justify-content-center px-3 text-nowrap" data-bs-toggle="modal" data-bs-target="#modalThemViTri" style="background: linear-gradient(135deg, #3b82f6, #2563eb); border: none; font-size: .8125rem; font-weight: 600; border-radius: .5rem; height: 38px; line-height: 1;">
+                    <i class="bi bi-plus-lg me-1"></i> Thêm vị trí mới
+                </button>
+            </div>
+        </div>
+    </form>
+
+    <!-- 2. HÀNG TRÊN CÙNG: QUY TRÌNH TUYỂN DỤNG HIỂN THỊ THEO CHUỖI NẰM NGANG (CÓ VIỀN MÀU VÀ MŨI TÊN RÕ RÀNG) -->
+    <div class="pipeline-chain-card">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+            <h6 class="viti-panel-title">
+                <span class="viti-dot blue"></span> Quy trình tuyển dụng theo giai đoạn
+            </h6>
+            <span class="text-muted" style="font-size: .75rem;">Chuỗi tiến trình tổng hợp</span>
+        </div>
+        <div class="row g-2 align-items-center">
+            @{
+                var borderColors = new string[] { "#2563eb", "#4f46e5", "#0284c7", "#16a34a", "#dc2626" };
+                var bgColors = new string[] { "#eff6ff", "#f5f3ff", "#f0f9ff", "#f0fdf4", "#fef2f2" };
+                var textColors = new string[] { "#1d4ed8", "#4338ca", "#0369a1", "#15803d", "#b91c1c" };
+            }
+            @for (int i = 0; i < Model.QuyTrinhTuyenDung.Count; i++)
+            {
+                var item = Model.QuyTrinhTuyenDung[i];
+                var borderColor = borderColors[i % borderColors.Length];
+                var bgColor = bgColors[i % bgColors.Length];
+                var textColor = textColors[i % textColors.Length];
+
+                <div class="col">
+                    <div class="pipeline-step-item text-center" style="background: @bgColor; border: 1.5px solid @borderColor;">
+                        <div class="text-truncate fw-bold" style="font-size: .75rem; color: @textColor;">@item.Ten</div>
+                        <div class="fs-4 fw-bold text-dark my-0.5">@item.SoLuong</div>
+                        <div class="d-flex align-items-center justify-content-center gap-1" style="font-size: .7rem;">
+                            <span class="text-muted">@item.GhiChu</span>
+                            <span class="fw-semibold @(item.PhanTramThayDoi >= 0 ? "text-success" : "text-danger")">
+                                @(item.PhanTramThayDoi >= 0 ? "+" : "")@item.PhanTramThayDoi%
+                            </span>
                         </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn-success">Lưu</button>
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Huỷ</button>
+                </div>
+                @if (i < Model.QuyTrinhTuyenDung.Count - 1)
+                {
+                    <div class="col-auto px-1 text-center d-none d-md-block">
+                        <div class="d-flex align-items-center justify-content-center rounded-circle" style="width: 26px; height: 26px; background: #ffffff; border: 1.5px solid #cbd5e1; color: #2563eb; box-shadow: 0 2px 5px rgba(0,0,0,0.06);">
+                            <i class="bi bi-chevron-right fw-bold" style="font-size: .8rem; -webkit-text-stroke: 0.5px;"></i>
+                        </div>
                     </div>
-                </form>
-            </div>
-        </div>
-    </div>
-    @if (Context.Request.Query.Count > 0)
-    {
-        <div class="card p-3 mt-4">
-            <h5 class="fw-bold mb-3">Kết quả lọc vị trí tuyển dụng</h5>
-            @if (Model.DanhSachViTri.Any())
-            {
-                <table class="table table-bordered table-hover">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Tên vị trí</th>
-                            <th>Phòng ban</th>
-                            <th>Trạng thái</th>
-                            <th>Ngày tạo</th>
-                            <th>Số lượng cần tuyển</th>
-                            <th>Đã tuyển</th>
-                            <th>Sửa</th> <!-- Thêm cột Sửa -->
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var item in Model.DanhSachViTri)
-                        {
-                            <tr>
-                                <td>@item.TenViTri</td>
-                                <td>@item.PhongBan?.TenPhong</td>
-                                <td>
-                                    <span class="badge
-    @(item.TrangThai == TrangThaiViTriEnum.DangTuyen.ToString() ? "bg-success" :
-      item.TrangThai == TrangThaiViTriEnum.TamDung.ToString() ? "bg-warning text-dark" : "bg-secondary")"
-                                          id="badge-@item.MaViTri">
-                                        @((item.TrangThai.ToEnum<TrangThaiViTriEnum>()).GetDisplayName().ToUpper())
-                                    </span>
-
-                                </td>
-                                <td>@item.NgayTao?.ToString("dd/MM/yyyy")</td>
-                                <td>@item.SoLuongCanTuyen</td>
-                                <td>
-                                    @(item.UngViens?.Count(uv => uv.TrangThai == TrangThaiUngVienEnum.DaTuyen.ToString()) ?? 0)
-                                </td>
-
-                                <td>
-                                    <button class="btn btn-sm btn-outline-primary" onclick="moModalSuaViTri('@item.MaViTri')">
-                                        <i class="bi bi-pencil"></i> Sửa
-                                    </button>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-
-            }
-            else
-            {
-                <p class="text-muted fst-italic">Không tìm thấy kết quả phù hợp với bộ lọc.</p>
-            }
-        </div>
-    }
-
-    <!-- Thống kê nhanh -->
-    <div class="row g-3 mb-4">
-        <div class="col-md-3">
-            <div class="card p-3 text-center">
-                <div class="text-primary fs-4"><i class="bi bi-briefcase-fill"></i></div>
-                <h4>@Model.DanhSachViTri.Count()</h4>
-                <div class="text-muted">Tổng vị trí</div>
-                <canvas id="chartTongViTri" height="40"></canvas>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card p-3 text-center">
-                <div class="text-success fs-4"><i class="bi bi-play-circle-fill"></i></div>
-                <h4>@Model.DanhSachViTri.Count(v => v.TrangThai == TrangThaiViTriEnum.DangTuyen.ToString())</h4>
-                <div class="text-muted">Đang tuyển</div>
-                <canvas id="chartDangTuyen" height="40"></canvas>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card p-3 text-center">
-                <div class="text-purple fs-4"><i class="bi bi-people-fill"></i></div>
-                <h4>@Model.DanhSachViTri.Sum(v => v.UngViens?.Count ?? 0)</h4>
-                <div class="text-muted">Ứng viên mới</div>
-                <canvas id="chartUngVien" height="40"></canvas>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card p-3 text-center">
-                <div class="text-info fs-4"><i class="bi bi-check-circle-fill"></i></div>
-                @{
-                    var tong = Model.DanhSachViTri.Count();
-                    var coUngVien = Model.DanhSachViTri.Count(v => v.UngViens != null && v.UngViens.Any());
-                    var tyLe = tong > 0 ? (int)((double)coUngVien / tong * 100) : 0;
                 }
-                <h4>@tyLe%</h4>
-                <div class="text-muted">Vị trí có ứng viên</div>
-                <canvas id="chartThanhCong" height="40"></canvas>
+            }
+        </div>
+    </div>
+
+    <!-- 3. HÀNG GIỮA: 4 THỐNG KÊ (CHỮ BÊN TRÁI, SỐ BÊN PHẢI TO RÕ) (1/6) + BIỂU ĐỒ TRÒN (2/6) + BIỂU ĐỒ XU HƯỚNG CÓ MÀU (3/6) -->
+    <div class="row g-2 mb-3">
+        <!-- 1/6: 4 Thống kê xếp HÀNG DỌC (CHỮ TRÁI, SỐ PHẢI TO RÕ) (col-lg-2) -->
+        <div class="col-lg-2 col-md-3 col-12 d-flex flex-column gap-2">
+            <!-- Thống kê 1 -->
+            <div class="viti-kpi-card-vertical blue flex-fill">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-1.5 pe-1">
+                        <i class="bi bi-briefcase-fill text-primary" style="font-size: .85rem;"></i>
+                        <span class="viti-kpi-title text-wrap">TỔNG VỊ TRÍ</span>
+                    </div>
+                    <div class="viti-kpi-value text-primary fs-2 fw-bold text-end">@Model.DanhSachViTri.Count()</div>
+                </div>
+                <div style="height: 18px; position: relative;" class="mt-1"><canvas id="chartTongViTri"></canvas></div>
+            </div>
+
+            <!-- Thống kê 2 -->
+            <div class="viti-kpi-card-vertical teal flex-fill">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-1.5 pe-1">
+                        <i class="bi bi-play-circle-fill text-info" style="font-size: .85rem;"></i>
+                        <span class="viti-kpi-title text-wrap">ĐANG TUYỂN</span>
+                    </div>
+                    <div class="viti-kpi-value text-info fs-2 fw-bold text-end">@Model.DanhSachViTri.Count(v => v.TrangThai == TrangThaiViTriEnum.DangTuyen.ToString() || v.TrangThai == "Đang tuyển")</div>
+                </div>
+                <div style="height: 18px; position: relative;" class="mt-1"><canvas id="chartDangTuyen"></canvas></div>
+            </div>
+
+            <!-- Thống kê 3 -->
+            <div class="viti-kpi-card-vertical indigo flex-fill">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-1.5 pe-1">
+                        <i class="bi bi-people-fill" style="color:#4f46e5; font-size: .85rem;"></i>
+                        <span class="viti-kpi-title text-wrap">ỨNG VIÊN MỚI</span>
+                    </div>
+                    <div class="viti-kpi-value fs-2 fw-bold text-end" style="color:#4f46e5;">@Model.DanhSachViTri.Sum(v => v.UngViens?.Count ?? 0)</div>
+                </div>
+                <div style="height: 18px; position: relative;" class="mt-1"><canvas id="chartUngVien"></canvas></div>
+            </div>
+
+            <!-- Thống kê 4 -->
+            <div class="viti-kpi-card-vertical sky flex-fill">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-1.5 pe-1">
+                        <i class="bi bi-check-circle-fill" style="color:#0369a1; font-size: .85rem;"></i>
+                        <span class="viti-kpi-title text-wrap">CÓ ỨNG VIÊN</span>
+                    </div>
+                    @{
+                        var tong = Model.DanhSachViTri.Count();
+                        var coUngVien = Model.DanhSachViTri.Count(v => v.UngViens != null && v.UngViens.Any());
+                        var tyLe = tong > 0 ? (int)((double)coUngVien / tong * 100) : 0;
+                    }
+                    <div class="viti-kpi-value fs-2 fw-bold text-end" style="color:#0369a1;">@tyLe%</div>
+                </div>
+                <div style="height: 18px; position: relative;" class="mt-1"><canvas id="chartThanhCong"></canvas></div>
+            </div>
+        </div>
+
+        <!-- 2/6: Biểu đồ tròn (Phân bố trạng thái) (col-lg-4) -->
+        <div class="col-lg-4 col-md-4 col-12">
+            <div class="viti-panel d-flex flex-column">
+                <div class="viti-panel-header">
+                    <h6 class="viti-panel-title">
+                        <span class="viti-dot teal"></span> Phân bố trạng thái
+                    </h6>
+                </div>
+                <div class="flex-grow-1 d-flex align-items-center justify-content-center" style="position: relative; min-height: 210px; width: 100%;">
+                    <canvas id="chartTrangThai"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3/6: Biểu đồ xu hướng tuyển dụng CÓ MÀU Sinh Động (col-lg-6) -->
+        <div class="col-lg-6 col-md-5 col-12">
+            <div class="viti-panel d-flex flex-column">
+                <div class="viti-panel-header">
+                    <h6 class="viti-panel-title">
+                        <span class="viti-dot indigo"></span> Xu hướng tuyển dụng
+                    </h6>
+                </div>
+                <div class="flex-grow-1" style="position: relative; min-height: 210px; width: 100%;">
+                    <canvas id="chartXuHuong"></canvas>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Biểu đồ và quy trình -->
-    <div class="row mb-4">
-        <!-- Box 1: Quy trình tuyển dụng -->
-        <div class="col-md-4">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h5 class="fw-bold mb-3">Quy trình tuyển dụng</h5>
-                    @foreach (var item in Model.QuyTrinhTuyenDung)
+    <!-- 4. HÀNG DƯỚI: VỊ TRÍ ĐANG TUYỂN (4/6) + HOẠT ĐỘNG GẦN ĐÂY (2/6) -->
+    <div class="row g-2">
+        <!-- 4/6: Vị trí đang tuyển - CÓ NÚT SỬA NGAY TẠI ĐÓ (col-lg-8) -->
+        <div class="col-lg-8 col-md-8 col-12">
+            <div class="viti-panel">
+                <div class="viti-panel-header">
+                    <h6 class="viti-panel-title">
+                        <span class="viti-dot blue"></span> Vị trí đang tuyển (@Model.DanhSachViTri.Count())
+                    </h6>
+                    <span class="text-muted small">Nhấn nút <b>Sửa</b> để chỉnh sửa thông tin vị trí ngay</span>
+                </div>
+                <div class="vi-tri-scroll pe-1">
+                    @if (Model.DanhSachViTri != null && Model.DanhSachViTri.Any())
                     {
-                        <div class="d-flex align-items-center justify-content-between mb-3">
-                            <div>
-                                <div class="fw-semibold">@item.Ten</div>
-                                <div class="text-muted small">@item.GhiChu</div>
+                        <div class="row g-2">
+                            @foreach (var item in Model.DanhSachViTri)
+                            {
+                                var tongHoSo = item.UngViens?.Count() ?? 0;
+                                var daDeXuat = item.UngViens?.Count(uv => uv.TrangThai == TrangThaiUngVienEnum.DaTuyen.ToString()) ?? 0;
+
+                                <div class="col-md-6 col-12">
+                                    <div class="p-3 rounded-3 h-100 d-flex flex-column justify-content-between" style="background: #f8fafc; border: 1px solid #e2e8f0; transition: border-color .2s;">
+                                        <div>
+                                            <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
+                                                <div class="fw-bold text-dark text-truncate" style="font-size: .9rem;">@item.TenViTri</div>
+                                                <span class="badge rounded-pill flex-shrink-0" style="font-size: .65rem; font-weight: 600; padding: .2rem .55rem;
+                                                    @(item.TrangThai == TrangThaiViTriEnum.DangTuyen.ToString() ? "background-color:#dbeafe; color:#1e40af;" : 
+                                                      item.TrangThai == TrangThaiViTriEnum.TamDung.ToString() ? "background-color:#fef3c7; color:#92400e;" : "background-color:#f1f5f9; color:#475569;")" id="badge-@item.MaViTri">
+                                                    @((item.TrangThai.ToEnum<TrangThaiViTriEnum>()).GetDisplayName().ToUpper())
+                                                </span>
+                                            </div>
+                                            <div class="text-muted small mb-2"><i class="bi bi-building me-1"></i>@(item.PhongBan?.TenPhong ?? "Chưa xếp phòng")</div>
+                                        </div>
+
+                                        <div class="d-flex justify-content-between align-items-center pt-2 border-top" style="border-color: #e2e8f0!important;">
+                                            <div class="d-flex gap-3 text-muted" style="font-size: .78rem;">
+                                                <span><b>@tongHoSo</b> hồ sơ</span>
+                                                <span class="text-primary"><b>@daDeXuat</b> đã tuyển</span>
+                                            </div>
+                                            <button class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1 py-1 px-2.5" style="border-radius: .4rem; font-size: .78rem; font-weight: 600;" onclick="moModalSuaViTri('@item.MaViTri')">
+                                                <i class="bi bi-pencil-square"></i> Sửa
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4 text-muted fst-italic">Không có vị trí tuyển dụng phù hợp.</div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- 2/6: Hoạt động gần đây (nhấp vào chuyển trang HoatDongGanDay có nút Back) (col-lg-4) -->
+        <div class="col-lg-4 col-md-4 col-12">
+            <div class="viti-panel">
+                <div class="viti-panel-header">
+                    <h6 class="viti-panel-title">
+                        <span class="viti-dot indigo"></span> Hoạt động gần đây
+                    </h6>
+                    <a asp-action="HoatDongGanDay" class="text-decoration-none" style="font-size: .78rem; font-weight: 600; color: #2563eb;">Xem tất cả &rarr;</a>
+                </div>
+                <div class="hoat-dong-scroll pe-1">
+                    @foreach (var log in Model.HoatDongGanDay.Take(6))
+                    {
+                        <div class="d-flex mb-2 pb-2 border-bottom" style="border-color: #f1f5f9!important;">
+                            <div class="me-2.5 mt-0.5">
+                                <div style="width: 28px; height: 28px; border-radius: 50%; background: #eff6ff; display: flex; align-items: center; justify-content: center; color: #2563eb; font-size: .8rem;">
+                                    <i class="@(string.IsNullOrEmpty(log.Icon) ? "bi bi-activity" : log.Icon)"></i>
+                                </div>
                             </div>
-                            <div class="text-end">
-                                <div class="fw-bold">@item.SoLuong</div>
-                                <div class="fw-semibold small @(item.PhanTramThayDoi >= 0 ? "text-success" : "text-danger")">
-                                    @(item.PhanTramThayDoi >= 0 ? "+" : "")@item.PhanTramThayDoi%
+                            <div class="flex-grow-1">
+                                <div class="fw-semibold text-dark" style="font-size: .8rem;">@log.TieuDe</div>
+                                <div class="text-muted" style="font-size: .73rem;">@log.NoiDung</div>
+                                <div class="d-flex justify-content-between mt-1">
+                                    <span class="text-muted fw-medium" style="font-size: .68rem;">@log.NguoiThucHien</span>
+                                    <span class="text-muted" style="font-size: .68rem;">
+                                        @(log.ThoiGian != null ? ThoiGianHelper.TinhTuLuc(log.ThoiGian.Value) : "")
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -248,131 +443,70 @@
                 </div>
             </div>
         </div>
-
-        <!-- Box 2: Biểu đồ Donut -->
-        <div class="col-md-4">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h5 class="fw-bold mb-3">Phân bố trạng thái</h5>
-                    <canvas id="chartTrangThai" height="200"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <!-- Box 3: Biểu đồ xu hướng -->
-        <div class="col-md-4">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h5 class="fw-bold mb-3">Xu hướng tuyển dụng</h5>
-                    <canvas id="chartXuHuong" height="200"></canvas>
-                </div>
-            </div>
-        </div>
     </div>
+</div>
 
-
-    <div class="row">
-        <!-- Cột trái: Vị trí đang tuyển -->
-        <div class="col-md-6">
-            <div class="card p-3 h-100 vi-tri-scroll">
-                <div class="d-flex justify-content-between">
-                    <h5 class="fw-bold mb-3">Vị trí đang tuyển</h5>
-                    <a href="/ViTriTuyenDungs/HoatDongGanDay" class="text-decoration-none">Xem tất cả →</a>
+<!-- Modal thêm vị trí mới -->
+<div class="modal fade" id="modalThemViTri" tabindex="-1" aria-labelledby="modalThemViTriLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" style="border: none; border-radius: 0.75rem; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
+            <form method="post" asp-action="CreatePopup">
+                <div class="modal-header border-bottom-0 pb-0 pt-3 px-4">
+                    <h5 class="modal-title fw-bold text-dark fs-6" id="modalThemViTriLabel">Thêm vị trí tuyển dụng mới</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
                 </div>
-
-                @foreach (var item in Model.DanhSachViTri.Where(v => v.TrangThai == TrangThaiViTriEnum.DangTuyen.ToString()))
-                {
-                    var tongHoSo = item.UngViens?.Count() ?? 0;
-                    var daDeXuat = item.UngViens?.Count(uv => uv.TrangThai == TrangThaiUngVienEnum.DaTuyen.ToString()) ?? 0;
-                    <div class="border rounded p-3 mb-3">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <strong>@item.TenViTri</strong>
-                                <span class="badge bg-@((item.TrangThai == TrangThaiViTriEnum.DangTuyen.ToString()) ? "success" : "warning text-dark") ms-2">
-                                    @((Enum.Parse<TrangThaiViTriEnum>(item.TrangThai)).GetDisplayName().ToUpper())
-                                </span>
-
-                                <div class="text-muted small">@item.PhongBan?.TenPhong</div>
-                            </div>
-                            <div class="text-end small text-muted">
-                                <div>@tongHoSo hồ sơ</div>
-                                <div>@daDeXuat tiếp nhận</div>
-                                <div>
-                                    @{
-                                        var trangThai = item.TrangThai;
-                                        var moTa = trangThai switch
-                                        {
-                                            nameof(TrangThaiViTriEnum.DangTuyen) => "Đang mở nhận hồ sơ",
-                                            nameof(TrangThaiViTriEnum.TamDung) => "Tạm dừng tuyển",
-                                            nameof(TrangThaiViTriEnum.DaDong) => "Đã kết thúc",
-                                            _ => "Không xác định"
-                                        };
-
+                <div class="modal-body px-4 py-3">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small fw-semibold">Tên vị trí</label>
+                            <input name="TenViTri" class="form-control" style="border-radius: .5rem; font-size: .85rem; border-color: #cbd5e1;" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small fw-semibold">Phòng ban</label>
+                            <select name="PhongBanId" class="form-select" style="border-radius: .5rem; font-size: .85rem; border-color: #cbd5e1;">
+                                @if (ViewBag.PhongBans != null)
+                                {
+                                    foreach (var pb in ViewBag.PhongBans as List<PhongBan>)
+                                    {
+                                        <option value="@pb.Id">@pb.TenPhong</option>
                                     }
-                                    @moTa
-                                </div>
-                            </div>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small fw-semibold">Số lượng cần tuyển</label>
+                            <input name="SoLuongCanTuyen" type="number" class="form-control" style="border-radius: .5rem; font-size: .85rem; border-color: #cbd5e1;" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small fw-semibold">Trạng thái</label>
+                            <select name="TrangThai" class="form-select" style="border-radius: .5rem; font-size: .85rem; border-color: #cbd5e1;">
+                                <option>Đang tuyển</option>
+                                <option>Tạm dừng</option>
+                                <option>Đã đóng</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label text-muted small fw-semibold">Kỹ năng</label>
+                            <textarea name="KyNang" class="form-control" rows="3" style="border-radius: .5rem; font-size: .85rem; border-color: #cbd5e1;"></textarea>
                         </div>
                     </div>
-                }
-            </div>
-        </div>
-
-        <!-- Cột phải: Hoạt động gần đây -->
-        <div class="col-md-6">
-            <div class="card p-3 h-100 hoat-dong-scroll">
-                <div class="d-flex justify-content-between">
-                    <h5 class="fw-bold mb-3">Hoạt động gần đây</h5>
-                    <a asp-action="TatCaHoatDong" class="text-decoration-none">Xem tất cả →</a>
                 </div>
-
-                @foreach (var log in Model.HoatDongGanDay.Take(4))
-                {
-                    var boxClass = log.Loai switch
-                    {
-                        "create" => "activity-box activity-create",
-                        "upload" => "activity-box activity-upload",
-                        "schedule" => "activity-box activity-schedule",
-                        "complete" => "activity-box activity-complete",
-                        _ => "activity-box"
-                    };
-
-                    <div class="@boxClass">
-                        <div class="fw-bold">@log.TieuDe</div>
-                        <div>@log.NoiDung</div>
-
-                        @if (!string.IsNullOrEmpty(log.Icon) || !string.IsNullOrEmpty(log.NguoiThucHien))
-                        {
-                            <div class="mt-1 text-muted small d-flex align-items-center gap-2">
-                                @if (!string.IsNullOrEmpty(log.Icon))
-                                {
-                                    <i class="@log.Icon"></i>
-                                }
-                                <span>@log.NguoiThucHien</span>
-                            </div>
-                        }
-
-                        @if (log.ThoiGian != null)
-                        {
-                            <div class="text-end text-muted small mt-1">
-                                @ThoiGianHelper.TinhTuLuc(log.ThoiGian.Value)
-                            </div>
-                        }
-                    </div>
-                }
-            </div>
+                <div class="modal-footer border-top-0 pt-0 px-4 pb-3">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal" style="border-radius: .5rem; font-weight: 600; font-size: .85rem;">Huỷ</button>
+                    <button type="submit" class="btn btn-primary" style="border-radius: .5rem; font-weight: 600; font-size: .85rem; background: linear-gradient(135deg, #3b82f6, #2563eb); border: none;">Lưu vị trí</button>
+                </div>
+            </form>
         </div>
-
     </div>
-
-    
-
 </div>
+
 <partial name="EditPopup" />
+
 @section Scripts {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <script>
         function miniChart(canvasId, data, color) {
             new Chart(document.getElementById(canvasId), {
@@ -389,27 +523,30 @@
                     }]
                 },
                 options: {
-                    plugins: { legend: { display: false } },
                     responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
                     scales: {
                         x: { display: false },
                         y: { display: false }
-                    } 
+                    }
                 }
             });
         }
 
-        miniChart('chartTongViTri', [12, 14, 18, 21, 22, 25, @Model.DanhSachViTri.Count()], '#3B82F6');
-        miniChart('chartDangTuyen', [10, 11, 13, 15, 16, 18, @Model.DanhSachViTri.Count(v => v.TrangThai == "DangTuyen")], '#10B981');
-        miniChart('chartUngVien', [80, 95, 100, 110, 130, 145, @Model.DanhSachViTri.Sum(v => v.UngViens?.Count ?? 0)], '#A855F7');
-        miniChart('chartThanhCong', [30, 45, 50, 55, 65, 72, @tyLe], '#0ea5e9');
+        miniChart('chartTongViTri', [12, 14, 18, 21, 22, 25, @Model.DanhSachViTri.Count()], '#2563eb');
+        miniChart('chartDangTuyen', [10, 11, 13, 15, 16, 18, @Model.DanhSachViTri.Count(v => v.TrangThai == "DangTuyen" || v.TrangThai == "Đang tuyển")], '#0284c7');
+        miniChart('chartUngVien', [80, 95, 100, 110, 130, 145, @Model.DanhSachViTri.Sum(v => v.UngViens?.Count ?? 0)], '#4f46e5');
+        miniChart('chartThanhCong', [30, 45, 50, 55, 65, 72, @tyLe], '#0369a1');
     </script>
+
     <script>
         const trangThaiData = @Html.Raw(JsonSerializer.Serialize(Model.PhanBoTrangThai));
         const thang = @Html.Raw(JsonSerializer.Serialize(Model.Thang));
         const viTriMoi = @Html.Raw(JsonSerializer.Serialize(Model.SoLuongViTriMoi));
         const hoanThanh = @Html.Raw(JsonSerializer.Serialize(Model.SoLuongHoanThanh));
     </script>
+
     <script>
         // Biểu đồ Donut – Phân bố trạng thái
         new Chart(document.getElementById("chartTrangThai"), {
@@ -418,21 +555,38 @@
                 labels: Object.keys(trangThaiData),
                 datasets: [{
                     data: Object.values(trangThaiData),
-                    backgroundColor: ["#10B981", "#FBBF24", "#6B7280", "#6366F1"]
+                    backgroundColor: ["#2563eb", "#0ea5e9", "#64748b", "#818cf8"]
                 }]
             },
             options: {
-                cutout: '60%',
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '65%',
                 plugins: {
                     legend: {
-                        position: 'bottom'
+                        position: 'bottom',
+                        labels: {
+                            boxWidth: 10,
+                            padding: 10,
+                            font: { size: 11, family: 'Inter' }
+                        }
                     }
                 }
             }
         });
 
-        // Biểu đồ Line – Xu hướng tuyển dụng
-        new Chart(document.getElementById("chartXuHuong"), {
+        // Biểu đồ Line – Xu hướng tuyển dụng (CÓ MÀU ĐƯỜNG VÀ GRADIENT SINH ĐỘNG)
+        const ctxXuHuong = document.getElementById("chartXuHuong").getContext("2d");
+
+        const gradientBlue = ctxXuHuong.createLinearGradient(0, 0, 0, 220);
+        gradientBlue.addColorStop(0, 'rgba(37, 99, 235, 0.35)');
+        gradientBlue.addColorStop(1, 'rgba(37, 99, 235, 0.01)');
+
+        const gradientSky = ctxXuHuong.createLinearGradient(0, 0, 0, 220);
+        gradientSky.addColorStop(0, 'rgba(14, 165, 233, 0.25)');
+        gradientSky.addColorStop(1, 'rgba(14, 165, 233, 0.01)');
+
+        new Chart(ctxXuHuong, {
             type: "line",
             data: {
                 labels: thang,
@@ -440,34 +594,60 @@
                     {
                         label: "Vị trí mới",
                         data: viTriMoi,
-                        borderColor: "#4a6cf7",
-                        backgroundColor: "rgba(74,108,247,0.1)",
+                        borderColor: "#2563eb",
+                        backgroundColor: gradientBlue,
                         fill: true,
-                        tension: 0.3
+                        tension: 0.4,
+                        borderWidth: 2.5,
+                        pointRadius: 4,
+                        pointBackgroundColor: "#2563eb",
+                        pointBorderColor: "#ffffff",
+                        pointHoverRadius: 6
                     },
                     {
                         label: "Hoàn thành",
                         data: hoanThanh,
-                        borderColor: "#00c897",
-                        backgroundColor: "rgba(0,200,151,0.1)",
+                        borderColor: "#0ea5e9",
+                        backgroundColor: gradientSky,
                         fill: true,
-                        tension: 0.3
+                        tension: 0.4,
+                        borderWidth: 2.5,
+                        pointRadius: 4,
+                        pointBackgroundColor: "#0ea5e9",
+                        pointBorderColor: "#ffffff",
+                        pointHoverRadius: 6
                     }
                 ]
             },
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
                 plugins: {
                     legend: {
-                        position: "bottom"
+                        position: "bottom",
+                        labels: {
+                            boxWidth: 12,
+                            padding: 10,
+                            font: { size: 11, family: 'Inter', weight: '500' }
+                        }
+                    }
+                },
+                scales: {
+                    x: { 
+                        grid: { display: false },
+                        ticks: { font: { size: 10, family: 'Inter' }, color: '#64748b' }
+                    },
+                    y: { 
+                        grid: { color: '#f1f5f9' },
+                        ticks: { font: { size: 10, family: 'Inter' }, color: '#64748b', stepSize: 1 }
                     }
                 }
             }
         });
     </script>
-  
+
     <script>
-                     function moModalSuaViTri(maViTri) {
+        function moModalSuaViTri(maViTri) {
             fetch(`/ViTriTuyenDungs/GetViTriById?id=${maViTri}`)
                 .then(res => res.json())
                 .then(data => {
@@ -481,23 +661,20 @@
                     document.getElementById('edit-TenViTri').value = data.tenViTri;
                     document.getElementById('edit-PhongBanId').value = data.phongBanId;
                     document.getElementById('edit-SoLuongCanTuyen').value = soLuongHienTai;
-                    document.getElementById('edit-TrangThai').value = trangThaiHienTai;
+                    document.getElementById('edit-TrangThai').value = data.trangThai;
                     document.getElementById('edit-KyNang').value = data.kyNang;
 
                     const selectTrangThai = document.getElementById('edit-TrangThai');
 
-                    // ❗ Nếu trạng thái hiện tại KHÔNG phải "Đang tuyển" VÀ số lượng đã tuyển >= số cần tuyển
-                    if (trangThaiHienTai !== "DangTuyen" && daTuyen >= soLuongHienTai){
-                        // Disable chọn lại "Đang tuyển"
+                    // Nếu trạng thái hiện tại KHÔNG phải "Đang tuyển" VÀ số lượng đã tuyển >= số cần tuyển
+                    if (trangThaiHienTai !== "DangTuyen" && daTuyen >= soLuongHienTai) {
                         for (let option of selectTrangThai.options) {
                             if (option.value === "Đang tuyển") {
                                 option.disabled = true;
                             }
                         }
-
                         alert("⚠️ Vị trí này đã đủ số lượng ứng viên trúng tuyển.\nBạn cần tăng 'Số lượng cần tuyển' nếu muốn chuyển về 'Đang tuyển'.");
                     } else {
-                        // Cho phép chọn lại nếu chưa đủ
                         for (let option of selectTrangThai.options) {
                             option.disabled = false;
                         }
@@ -506,9 +683,5 @@
                     new bootstrap.Modal(document.getElementById('modalSuaViTri')).show();
                 });
         }
-
-
     </script>
-
-
 }

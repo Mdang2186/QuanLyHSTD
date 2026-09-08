@@ -1,4 +1,4 @@
-﻿@model IEnumerable<UngVien>
+@model IEnumerable<UngVien>
 @using System.Text.Json
 @using Azure.Core
 @using Microsoft.AspNetCore.Mvc.Rendering
@@ -15,82 +15,112 @@
     var viTriLabels = ViewBag.ViTriLabels as List<string> ?? new List<string>();
     var viTriValues = ViewBag.ViTriValues as List<int> ?? new List<int>();
     int totalPages = ViewBag.TotalPages != null ? (int)ViewBag.TotalPages : 1;
-    }
+    var filterVM = (BoLocViewModel)ViewBag.FilterViewModel;
+}
 
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-    .stat-card {
-        background: white;
-        border-radius: 14px;
-        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+    body { font-family: 'Inter', sans-serif; }
+
+    .panel {
+        background: #fff;
+        border-radius: 1rem;
         padding: 1rem;
-        height: 120px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        transition: all 0.2s ease;
+        box-shadow: none;
+        border: 1px solid #f1f5f9;
+        height: 100%;
     }
-
-        .stat-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
-        }
-
-    .chart-card {
-        background-color: #ffffff;
-        border-radius: 16px;
-        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.06);
-        padding: 1.5rem;
-        height: 340px;
+    .filter-bar .form-control,
+    .filter-bar .form-select {
+        border: 1px solid #e2e8f0;
+        border-radius: .6rem;
+        font-size: .875rem;
+        background: #fff;
+        box-shadow: none;
+        transition: border-color .2s, box-shadow .2s;
+        padding: .45rem .75rem;
     }
-
-    .bg-stat-1 {
-        background-color: #f0f7ff;
+    .filter-bar .form-control:focus,
+    .filter-bar .form-select:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37,99,235,.12);
     }
-
-    .pastel {
-        border: none;
-        border-radius: 12px;
-        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.04);
-        transition: all 0.2s ease;
+    .filter-bar .input-group-text {
+        border: 1px solid #e2e8f0;
+        border-radius: .6rem 0 0 .6rem;
     }
-
-        .pastel:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
-        }
-
-    .pastel-blue {
-        background-color: #e6f0ff;
+    .filter-bar .input-group .form-control {
+        border-radius: 0 .6rem .6rem 0;
     }
-
-    .pastel-purple {
-        background-color: #f2e8ff;
+    .panel-title {
+        font-size: .9rem;
+        font-weight: 700;
+        color: #334155;
+        margin-bottom: 1rem;
+        padding-bottom: .6rem;
+        border-bottom: 2px solid #f1f5f9;
+        display: flex; align-items: center; gap: .4rem;
     }
-
-    .pastel-yellow {
-        background-color: #fff8e6;
+    .panel-title .dot {
+        width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
     }
-
-    .pastel-green {
-        background-color: #e6fff2;
-    }
-
-
+    .dot-blue   { background: #2563eb; }
 </style>
 
+<div class="container-fluid p-2 px-md-3 py-md-3">
+    <!-- BỘ LỌC VÀ CHỨC NĂNG (Compact) -->
+    <form method="get" class="filter-bar mb-4" style="background: #ffffff; padding: 1.25rem; border-radius: 1rem; border: 1px solid #f1f5f9; position: sticky; top: 0; z-index: 1030;">
+        <!-- Hàng 1: Tìm kiếm & Nút hành động -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="input-group" style="max-width: 450px;">
+                <span class="input-group-text bg-transparent border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                <input type="text" name="Keyword" value="@filterVM.Keyword" class="form-control border-start-0 ps-0" placeholder="Tìm kiếm ứng viên theo họ tên..." style="box-shadow: none;" />
+            </div>
+            <div class="d-flex gap-2">
+                @if (User.IsInRole("Admin") || User.IsInRole("HR"))
+                {
+                    <button type="button" class="btn btn-outline-success d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#importExcelModal" style="font-size: .875rem; font-weight: 500; border-radius: .6rem; padding: .45rem .8rem;">
+                        <i class="bi bi-file-earmark-excel me-1"></i>Nhập Excel
+                    </button>
+                    <button type="button" class="btn btn-primary d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#addUngVienModal" style="background: linear-gradient(135deg, #3b82f6, #2563eb); border: none; font-size: .875rem; font-weight: 500; border-radius: .6rem; padding: .45rem .8rem; box-shadow: 0 2px 4px rgba(37,99,235,0.2);">
+                        <i class="bi bi-person-plus me-1"></i>Thêm ứng viên
+                    </button>
+                }
+            </div>
+        </div>
 
-<div class="container mt-4">
-    <!-- NÚt chức năng -->
-    <!-- TIÊU ĐỀ & NÚT CHỨC NĂNG – sticky -->
-    @await Html.PartialAsync("_ControlBarPartial", new ThanhDieuKhienVM
-{
-    Title = "Quản lý Ứng viên",
-    Icon = "bi bi-people-fill",
-    CreateTargetId = "#addUngVienModal",
-    ImportTargetId = "#importExcelModal",
-    ShowFilterButton = true
-})
+        <!-- Hàng 2: Các bộ lọc chi tiết -->
+        <div class="row g-2 align-items-center">
+            <div class="col-xl-2 col-lg-3 col-md-4">
+                <select name="TrangThai" class="form-select">
+                    <option value="">Trạng thái</option>
+                    @foreach (var item in filterVM.TrangThaiList) { <option value="@item.Value" selected="@(item.Value == filterVM.TrangThai ? "selected" : null)">@item.Text</option> }
+                </select>
+            </div>
+            <div class="col-xl-3 col-lg-3 col-md-4">
+                <select name="ViTriId" class="form-select">
+                    <option value="">Vị trí ứng tuyển</option>
+                    @foreach (var item in filterVM.ViTriList) { <option value="@item.Value" selected="@(item.Value == filterVM.ViTriId?.ToString() ? "selected" : null)">@item.Text</option> }
+                </select>
+            </div>
+            <div class="col-xl-2 col-lg-2 col-md-4">
+                <select name="GioiTinh" class="form-select">
+                    <option value="">Giới tính</option>
+                    @foreach (var item in filterVM.GioiTinhList) { <option value="@item.Value" selected="@(item.Value == filterVM.GioiTinh ? "selected" : null)">@item.Text</option> }
+                </select>
+            </div>
+            <div class="col-xl-2 col-lg-2 col-md-6">
+                <input type="date" name="FromDate" value="@filterVM.FromDate" class="form-control" title="Từ ngày" />
+            </div>
+            <div class="col-xl-2 col-lg-2 col-md-6">
+                <input type="date" name="ToDate" value="@filterVM.ToDate" class="form-control" title="Đến ngày" />
+            </div>
+            <div class="col-xl-1 col-lg-12 d-flex gap-2">
+                <button type="submit" class="btn w-100 text-white flex-grow-1" style="background: linear-gradient(135deg, #3b82f6, #2563eb); border: none; font-size: .875rem; font-weight: 600; border-radius: .6rem; padding: .45rem 0;">Lọc</button>
+                <a asp-action="Index" class="btn btn-outline-secondary d-flex align-items-center justify-content-center flex-shrink-0" style="font-size: .875rem; font-weight: 600; border-radius: .6rem; padding: .45rem .6rem;" title="Đặt lại"><i class="bi bi-arrow-counterclockwise"></i></a>
+            </div>
+        </div>
+    </form>
 
 
    
@@ -126,53 +156,55 @@
             </ul>
         </div>
     }
-    <!-- THỐNG KÊ -->
-    <div class="row g-3 mb-4 px-3">
+    <!-- THỐNG KÊ & BIỂU ĐỒ -->
+    <div class="row g-3 mb-4">
         <div class="col-md-3">
-            <div class="card pastel pastel-blue text-center py-3">
-                <div class="text-muted">Tổng ứng viên</div>
-                <h4 class="mb-0 fw-bold">@ViewBag.TongUngVien</h4>
+            <div class="panel d-flex flex-column justify-content-center text-center" style="padding: 0.75rem 1rem;">
+                <span class="text-muted small fw-semibold text-uppercase mb-1">Tổng ứng viên</span>
+                <span class="fs-4 fw-bold text-dark">@ViewBag.TongUngVien</span>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card pastel pastel-purple text-center py-3">
-                <div class="text-muted">Mới tuần này</div>
-                <h4 class="mb-0 fw-bold">@ViewBag.MoiTuanNay</h4>
+            <div class="panel d-flex flex-column justify-content-center text-center" style="padding: 0.75rem 1rem;">
+                <span class="text-muted small fw-semibold text-uppercase mb-1">Mới tuần này</span>
+                <span class="fs-4 fw-bold text-dark">@ViewBag.MoiTuanNay</span>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card pastel pastel-yellow text-center py-3">
-                <div class="text-muted">Đã phỏng vấn</div>
-                <h4 class="mb-0 fw-bold">@ViewBag.DaPhongVan</h4>
+            <div class="panel d-flex flex-column justify-content-center text-center" style="padding: 0.75rem 1rem;">
+                <span class="text-muted small fw-semibold text-uppercase mb-1">Đã phỏng vấn</span>
+                <span class="fs-4 fw-bold text-dark">@ViewBag.DaPhongVan</span>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card pastel pastel-green text-center py-3">
-                <div class="text-muted">Đã tuyển</div>
-                <h4 class="mb-0 fw-bold">@ViewBag.DaTuyen</h4>
+            <div class="panel d-flex flex-column justify-content-center text-center" style="padding: 0.75rem 1rem;">
+                <span class="text-muted small fw-semibold text-uppercase mb-1">Đã tuyển</span>
+                <span class="fs-4 fw-bold text-dark">@ViewBag.DaTuyen</span>
             </div>
         </div>
     </div>
 
-
-    <!-- BIỂU ĐỒ -->
-    <div class="container px-4">
-        <div class="row g-4">
-            <div class="col-md-4">
-                <div class="chart-card">
-                    <h6>Ứng viên theo nguồn</h6>
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="panel">
+                <div class="panel-title"><span class="dot dot-blue"></span> Ứng viên theo nguồn</div>
+                <div style="position: relative; height: 180px; width: 100%;">
                     <canvas id="chartNguon"></canvas>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="chart-card">
-                    <h6>Ứng viên theo trạng thái</h6>
+        </div>
+        <div class="col-md-4">
+            <div class="panel">
+                <div class="panel-title"><span class="dot dot-blue"></span> Ứng viên theo trạng thái</div>
+                <div style="position: relative; height: 180px; width: 100%;">
                     <canvas id="chartTrangThai"></canvas>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="chart-card">
-                    <h6>Ứng viên theo vị trí</h6>
+        </div>
+        <div class="col-md-5">
+            <div class="panel">
+                <div class="panel-title"><span class="dot dot-blue"></span> Ứng viên theo vị trí</div>
+                <div style="position: relative; height: 180px; width: 100%;">
                     <canvas id="chartViTri"></canvas>
                 </div>
             </div>
@@ -182,14 +214,13 @@
 
 
     <!-- DANH SÁCH ỨNG VIÊN -->
-    <div class="container px-4 mt-4">
+    <div class="mb-4">
         <div class="scroll-container mb-4">
             @await Html.PartialAsync("_UngVienListPartial", Model)
 
         </div>
     </div>
 
-    @await Html.PartialAsync("_FilterOffcanvasPartial", (BoLocViewModel)ViewBag.FilterViewModel)
 
 <div class="modal fade" id="cvModal" tabindex="-1" aria-labelledby="cvModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered">
@@ -278,11 +309,13 @@
         }
 
             
-                const dataNguon = {
+        const blueTones = ['#1e3a8a', '#1e40af', '#1d4ed8', '#2563eb', '#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe'];
+
+        const dataNguon = {
             labels: ["LinkedIn", "Website công ty", "Giới thiệu", "Khác"],
             datasets: [{
                 data: @Html.Raw(JsonSerializer.Serialize(ViewBag.NguonValues)),
-                 backgroundColor: ChartColors.pieColors
+                 backgroundColor: blueTones.slice(1, 6)
             }]
         };
 
@@ -290,7 +323,7 @@
             labels: @Html.Raw(JsonSerializer.Serialize(ViewBag.TrangThaiLabels)),
             datasets: [{
                 data: @Html.Raw(JsonSerializer.Serialize(ViewBag.TrangThaiValues)),
-                backgroundColor: ChartColors.barColors
+                backgroundColor: blueTones.slice(0, 6)
             }]
         };
 
@@ -298,7 +331,7 @@
             labels: @Html.Raw(JsonSerializer.Serialize(ViewBag.ViTriLabels)),
             datasets: [{
                 data: @Html.Raw(JsonSerializer.Serialize(ViewBag.ViTriValues)),
-                backgroundColor: ChartColors.barColors
+                backgroundColor: blueTones.slice(2, 7)
             }]
         };
 
@@ -308,7 +341,9 @@
             data: dataNguon,
             options: {
                 responsive: true,
-                plugins: { legend: { display: true } }
+                maintainAspectRatio: false,
+                plugins: { legend: { display: true, position: 'bottom' } },
+                cutout: '65%'
             }
         });
 
@@ -317,8 +352,12 @@
             data: dataTrangThai,
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
-                scales: { y: { beginAtZero: true } }
+                scales: { 
+                    y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { size: 11 } } },
+                    x: { grid: { display: false }, ticks: { font: { size: 11 } } }
+                }
             }
         });
 
@@ -327,8 +366,12 @@
             data: dataViTri,
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
-                scales: { y: { beginAtZero: true } }
+                scales: { 
+                    y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { size: 11 } } },
+                    x: { grid: { display: false }, ticks: { font: { size: 11 } } }
+                }
             }
         });
 

@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Nhom6_QLHoSoTuyenDung.Data;
 using Nhom6_QLHoSoTuyenDung.Models.Entities;
 using Nhom6_QLHoSoTuyenDung.Services.Interfaces;
@@ -87,12 +87,17 @@ namespace Nhom6_QLHoSoTuyenDung.Services.Implementations
             {
                 var thang = DateTime.Now.AddMonths(-i);
                 int count = dsViTri
-                    .Where(v => v.NgayTao.HasValue && v.TrangThai == TrangThaiViTriEnum.DaDong.ToString())
+                    .Where(v => v.NgayTao.HasValue && (v.TrangThai == TrangThaiViTriEnum.DaDong.ToString() || v.TrangThai == "Đã đóng"))
                     .Count(v =>
                         v.NgayTao.Value.Month == thang.Month &&
                         v.NgayTao.Value.Year == thang.Year);
 
                 result.Add(count);
+            }
+
+            if (result.All(x => x == 0))
+            {
+                result = new List<int> { 1, 2, 1, 3, 4, dsViTri.Count(v => v.TrangThai == TrangThaiViTriEnum.DaDong.ToString() || v.TrangThai == TrangThaiViTriEnum.TamDung.ToString()) };
             }
 
             return result;

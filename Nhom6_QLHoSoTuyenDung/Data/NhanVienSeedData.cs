@@ -1,4 +1,4 @@
-﻿using Nhom6_QLHoSoTuyenDung.Models.Entities;
+using Nhom6_QLHoSoTuyenDung.Models.Entities;
 
 namespace Nhom6_QLHoSoTuyenDung.Data
 {
@@ -10,6 +10,12 @@ namespace Nhom6_QLHoSoTuyenDung.Data
 
             var nhanViens = new List<NhanVien>
             {
+                new NhanVien {
+                    MaNhanVien = "NV000", HoTen = "Đỗ Công Minh", MaSoNV = "PBIT00", NgaySinh = new DateTime(2003, 5, 21),
+                    ChucVu = "Admin", PhongBanId = "PBIT", Email = "mdang2186@gmail.com",
+                    SoDienThoai = "0372986808", NgayVaoCongTy = new DateTime(2024, 1, 1),
+                    KinhNghiem = "2", MoTa = "Quản trị hệ thống", MucLuong = 30000000
+                },
                 new NhanVien {
                     MaNhanVien = "NV001", HoTen = "Đinh Thị Diễm Quỳnh", MaSoNV = "KT01", NgaySinh = new DateTime(2004, 10, 10),
                     ChucVu = "Trưởng phòng", PhongBanId = "PBIT", Email = "diemquynhdinh1010@gmail.com",

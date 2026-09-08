@@ -1,11 +1,11 @@
-﻿@using Nhom6_QLHoSoTuyenDung.Models.ViewModels
+@using Nhom6_QLHoSoTuyenDung.Models.ViewModels
 @* Partial View: _ControlBarPartial.cshtml *@
 @model ThanhDieuKhienVM
 
-<div class="sticky-top bg-white shadow-sm border-bottom d-flex justify-content-between align-items-center px-3 py-2" style="top: 0; z-index: 1030;">
-    <h4 class="fw-bold m-0 d-flex align-items-center">
-        <i class="@Model.Icon me-2 text-primary"></i> @Model.Title
-    </h4>
+<div class="sticky-top d-flex justify-content-between align-items-center mb-4" style="top: 0; z-index: 1030; background: #ffffff; padding: 1rem; border-radius: 1rem; border: 1px solid #f1f5f9;">
+    <h5 class="fw-bold m-0 d-flex align-items-center text-dark">
+        <i class="@Model.Icon me-2" style="color: #2563eb;"></i> @Model.Title
+    </h5>
     <div class="d-flex gap-2">
         @if (User.IsInRole("Admin") || User.IsInRole("HR"))
         {
@@ -35,4 +35,4 @@
         }
     </div>
 </div>
-<div style="height: 70px;"></div>
+

@@ -1,17 +1,215 @@
-﻿@model Nhom6_QLHoSoTuyenDung.Models.ViewModels.ThongKe.ThongKeTongHopVM
+@model Nhom6_QLHoSoTuyenDung.Models.ViewModels.ThongKe.ThongKeTongHopVM
 @{
-    ViewData["Title"] = "📊 Thống kê & Báo cáo";
+    ViewData["Title"] = "Thống kê & Báo cáo";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="container-fluid px-4">
-    <!-- BỘ LỌC THỐNG KÊ -->
-    <div class="card mb-4 shadow-sm border-0">
-        <div class="card-body">
-            <form method="get" asp-action="Index" asp-controller="ThongKe" class="row g-2 align-items-end">
-                <div class="col-md-3">
-                    <input type="text" name="tuKhoa" class="form-control" placeholder="🔍 Tìm kiếm ứng viên..." value="@ViewBag.TuKhoa" />
+@section Styles {
+    <style>
+        /* ─── Thống Kê & Báo Cáo (Tone Màu Lam Modern Dashboard) ─── */
+        .thongke-container {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: #1e293b;
+            background-color: #ffffff;
+            width: 100%;
+        }
+
+        /* ─── Sticky Top Filter Bar ─── */
+        .thongke-filter-bar {
+            position: sticky;
+            top: 0px;
+            z-index: 1020;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.75rem;
+            padding: 0.85rem 1.15rem;
+            margin-bottom: 1.25rem;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+        }
+
+        .thongke-filter-bar .form-control,
+        .thongke-filter-bar .form-select {
+            border: 1px solid #cbd5e1;
+            border-radius: 0.5rem;
+            font-size: 0.8125rem;
+            color: #1e293b;
+            background-color: #ffffff;
+            height: 38px;
+            line-height: 1.5;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .thongke-filter-bar .form-control:focus,
+        .thongke-filter-bar .form-select:focus {
+            border-color: #0284c7;
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.12);
+        }
+
+        .btn-sky-search {
+            background: linear-gradient(135deg, #0284c7, #2563eb);
+            color: #ffffff;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            height: 38px;
+            padding: 0 1.25rem;
+            transition: opacity 0.2s, box-shadow 0.2s;
+        }
+        .btn-sky-search:hover {
+            opacity: 0.92;
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
+            color: #ffffff;
+        }
+
+        /* ─── Stat Quick Cards ─── */
+        .kpi-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.75rem;
+            padding: 0.9rem 1.15rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .kpi-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(2, 132, 199, 0.08);
+        }
+        .kpi-card.sky    { border-left: 4px solid #0284c7; }
+        .kpi-card.blue   { border-left: 4px solid #2563eb; }
+        .kpi-card.indigo { border-left: 4px solid #1d4ed8; }
+        .kpi-card.cyan   { border-left: 4px solid #1982a5; }
+
+        .kpi-icon-box {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+        .kpi-icon-box.sky    { background: #e0f2fe; color: #0284c7; }
+        .kpi-icon-box.blue   { background: #eff6ff; color: #2563eb; }
+        .kpi-icon-box.indigo { background: #e0e7ff; color: #1d4ed8; }
+        .kpi-icon-box.cyan   { background: #e0f7fa; color: #1982a5; }
+
+        .kpi-title {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: #64748b;
+        }
+        .kpi-val {
+            font-size: 1.75rem;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        /* ─── Dashboard Panel Cards Full Khung ─── */
+        .dash-panel {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.85rem;
+            padding: 1.1rem 1.25rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            height: 100%;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .dash-panel-title {
+            font-size: 0.875rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .viti-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+        }
+        .viti-dot.lam { background: #2563eb; }
+        .viti-dot.sky { background: #0284c7; }
+
+        .chart-container-box {
+            position: relative;
+            height: 230px;
+            width: 100%;
+            flex-grow: 1;
+        }
+
+        /* ─── Custom Layout Ratio Flex Rows ─── */
+        .chart-flex-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            width: 100%;
+        }
+
+        /* Hàng 1 Ratios: 3/11, 2/11, 6/11 */
+        .row1-col-3 { flex: 3 3 0%; min-width: 270px; }
+        .row1-col-2 { flex: 2 2 0%; min-width: 210px; }
+        .row1-col-6 { flex: 6 6 0%; min-width: 320px; }
+
+        /* Hàng 2 Ratios: 3/8, 3/8, 2/8 */
+        .row2-col-3a { flex: 3 3 0%; min-width: 290px; }
+        .row2-col-3b { flex: 3 3 0%; min-width: 290px; }
+        .row2-col-2  { flex: 2 2 0%; min-width: 220px; }
+
+        /* Scroll Area */
+        .scrollable-table {
+            max-height: 360px;
+            overflow-y: auto;
+        }
+        .scrollable-table::-webkit-scrollbar {
+            width: 4px;
+        }
+        .scrollable-table::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 4px;
+        }
+    </style>
+}
+
+<div class="thongke-container mb-4 px-2 px-md-3">
+
+    <!-- 1. STICKY TOP FILTER BAR (THANH CHỨC NĂNG CỐ ĐỊNH KHI LĂN CHUỘT) -->
+    <div class="thongke-filter-bar">
+        <form id="filterForm" method="get" asp-action="Index" asp-controller="ThongKe">
+            <!-- HÀNG TẠO 1: Tìm kiếm, Nút Lọc, Nút Đặt lại, Xuất Excel trên cùng -->
+            <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+                <div class="position-relative flex-grow-1" style="min-width: 240px; max-width: 450px;">
+                    <i class="bi bi-search position-absolute text-muted" style="left: 12px; top: 50%; transform: translateY(-50%); font-size: .85rem; pointer-events: none;"></i>
+                    <input type="text" name="tuKhoa" class="form-control" placeholder="Tìm kiếm ứng viên, email..." value="@ViewBag.TuKhoa" style="padding-left: 34px!important;" />
                 </div>
-                <div class="col-md-2">
+                <button type="submit" class="btn btn-sky-search d-inline-flex align-items-center gap-1">
+                    <i class="bi bi-funnel-fill"></i> Lọc
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary d-inline-flex align-items-center gap-1" style="height: 38px; font-size: .8125rem; border-radius: .5rem; border-color: #cbd5e1; color: #475569;">
+                    <i class="bi bi-arrow-counterclockwise"></i> Đặt lại
+                </a>
+                <button type="button" id="btnExportExcel" class="btn btn-outline-success d-inline-flex align-items-center gap-1 ms-auto" style="height: 38px; font-size: .8125rem; border-radius: .5rem; font-weight: 600;">
+                    <i class="bi bi-file-earmark-excel-fill"></i> Xuất Excel
+                </button>
+            </div>
+
+            <!-- HÀNG TẠO 2: Các bộ lọc chi tiết bên dưới thanh tìm kiếm -->
+            <div class="row g-2 align-items-center">
+                <!-- Dropdown Loại báo cáo -->
+                <div class="col-md-2 col-6">
                     @{
                         var loai = ViewBag.Loai as string ?? "";
                     }
@@ -23,167 +221,273 @@
                         <option value="phongban" selected="@(loai == "phongban" ? "selected" : null)">Theo phòng ban</option>
                     </select>
                 </div>
-                <div class="col-md-2">
+
+                <!-- Dropdown Trạng thái -->
+                <div class="col-md-2 col-6">
                     <select name="trangThai" class="form-select">
                         <option value="">Tất cả trạng thái</option>
-                        @foreach (var item in ViewBag.ListTrangThai as List<SelectListItem>)
+                        @if (ViewBag.ListTrangThai != null)
                         {
-                            <option value="@item.Value" selected="@(item.Value == ViewBag.TrangThai ? "selected" : null)">@item.Text</option>
+                            foreach (var item in ViewBag.ListTrangThai as List<SelectListItem>)
+                            {
+                                <option value="@item.Value" selected="@(item.Value == ViewBag.TrangThai ? "selected" : null)">@item.Text</option>
+                            }
                         }
                     </select>
                 </div>
-                <div class="col-md-2">
+
+                <!-- Dropdown Vị trí -->
+                <div class="col-md-2 col-6">
                     <select name="viTriId" class="form-select">
                         <option value="">Tất cả vị trí</option>
-                        @foreach (var item in ViewBag.ListViTri as List<SelectListItem>)
+                        @if (ViewBag.ListViTri != null)
                         {
-                            <option value="@item.Value" selected="@(item.Value == ViewBag.ViTriId ? "selected" : null)">@item.Text</option>
+                            foreach (var item in ViewBag.ListViTri as List<SelectListItem>)
+                            {
+                                <option value="@item.Value" selected="@(item.Value == ViewBag.ViTriId ? "selected" : null)">@item.Text</option>
+                            }
                         }
                     </select>
                 </div>
-                <div class="col-md-3">
+
+                <!-- Dropdown Phòng ban -->
+                <div class="col-md-2 col-6">
                     <select name="phongBanId" class="form-select">
                         <option value="">Tất cả phòng ban</option>
-                        @foreach (var item in ViewBag.ListPhongBan as List<SelectListItem>)
+                        @if (ViewBag.ListPhongBan != null)
                         {
-                            <option value="@item.Value" selected="@(item.Value == ViewBag.PhongBanId ? "selected" : null)">@item.Text</option>
+                            foreach (var item in ViewBag.ListPhongBan as List<SelectListItem>)
+                            {
+                                <option value="@item.Value" selected="@(item.Value == ViewBag.PhongBanId ? "selected" : null)">@item.Text</option>
+                            }
                         }
                     </select>
                 </div>
-                <div class="col-md-2">
-                    <input type="date" name="tuNgay" class="form-control" value="@(ViewBag.TuNgay is DateTime ? ((DateTime)ViewBag.TuNgay).ToString("yyyy-MM-dd") : "")" />
-                </div>
-                <div class="col-md-2">
-                    <input type="date" name="denNgay" class="form-control" value="@(ViewBag.DenNgay is DateTime ? ((DateTime)ViewBag.DenNgay).ToString("yyyy-MM-dd") : "")" />
+
+                <!-- Từ ngày -->
+                <div class="col-md-2 col-6">
+                    <input type="date" name="tuNgay" class="form-control" title="Từ ngày" value="@(ViewBag.TuNgay is DateTime ? ((DateTime)ViewBag.TuNgay).ToString("yyyy-MM-dd") : "")" />
                 </div>
 
-                <div class="col-md-4 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary"><i class="bi bi-funnel"></i> Áp dụng</button>
-                    <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-clockwise"></i>Đặt lại</a>
+                <!-- Đến ngày -->
+                <div class="col-md-2 col-6">
+                    <input type="date" name="denNgay" class="form-control" title="Đến ngày" value="@(ViewBag.DenNgay is DateTime ? ((DateTime)ViewBag.DenNgay).ToString("yyyy-MM-dd") : "")" />
                 </div>
-            </form>
-        </div>
+            </div>
+        </form>
     </div>
 
-    <!-- ✅ NÚT XUẤT BÁO CÁO MỚI -->
-    <div class="d-flex justify-content-end">
-        <button id="btnExportExcel" class="btn btn-outline-success mb-3">
-            <i class="bi bi-download"></i> Xuất báo cáo theo bộ lọc 
-        </button>
-    </div>
-
-    <!-- TỔNG QUAN -->
-    <div class="row g-4 mb-4">
-        <div class="col-md-3">
-            <div class="card text-white bg-primary shadow-sm rounded-4">
-                <div class="card-body text-center">
-                    <h6 class="card-title">Tổng ứng viên</h6>
-                    <p class="fs-3 fw-bold">@Model.TongUngVien</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card text-white bg-success shadow-sm rounded-4">
-                <div class="card-body text-center">
-                    <h6 class="card-title">Đã tuyển</h6>
-                    <p class="fs-3 fw-bold">@Model.SoDaTuyen</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card text-dark bg-warning shadow-sm rounded-4">
-                <div class="card-body text-center">
-                    <h6 class="card-title">Đang xử lý</h6>
-                    <p class="fs-3 fw-bold">@Model.SoDangXuLy</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card text-white bg-info shadow-sm rounded-4">
-                <div class="card-body text-center">
-                    <h6 class="card-title">Vị trí đang tuyển</h6>
-                    <p class="fs-3 fw-bold">@Model.SoViTriDangTuyen</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- BIỂU ĐỒ -->
-    <div class="row g-4">
-        @foreach (var chart in new[] {
-        new { Id = "chartTrangThai", Title = "Trạng thái ứng viên", Sub = "Theo giai đoạn xử lý" },
-        new { Id = "chartNguon", Title = "Nguồn ứng viên", Sub = "Kênh tuyển dụng" },
-        new { Id = "chartViTri", Title = "Vị trí ứng tuyển", Sub = "Theo vị trí công việc" },
-        new { Id = "chartPhongBan", Title = "Phòng ban", Sub = "Theo phòng ban liên quan" },
-        new { Id = "chartDanhGia", Title = "Đánh giá", Sub = "Phân loại đánh giá" },
-        new { Id = "chartXuHuongThang", Title = "Xu hướng ứng tuyển", Sub = "Theo tháng nộp hồ sơ" }
-        })
-        {
-            <div class="col-md-6">
-                <div class="card shadow-sm rounded-4">
-                    <div class="card-body">
-                        <h6 class="card-title">@chart.Title</h6>
-                        <p class="text-muted small">@chart.Sub</p>
-                        <canvas id="@chart.Id" height="250"></canvas>
+    <!-- 2. THỐNG KÊ NHANH KPI (TONE MÀU LAM CHUẨN) -->
+    <div class="row g-3 mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="kpi-card sky">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="kpi-icon-box sky">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                    <div>
+                        <div class="kpi-title">TỔNG ỨNG VIÊN</div>
+                        <div class="kpi-val text-dark mt-1">@Model.TongUngVien</div>
                     </div>
                 </div>
             </div>
-        }
-    </div>
-
-    <!-- VỊ TRÍ TUYỂN THÀNH CÔNG -->
-    <div class="card border-0 mt-5 shadow-sm rounded-4">
-        <div class="card-header bg-secondary text-white fw-bold rounded-top">
-            Vị trí tuyển thành công (Top 5)
         </div>
-        <div class="card-body p-0">
-            <div id="tableViTriTuyenThanhCong">
-                @await Component.InvokeAsync("ViTriThanhCong", new { tuKhoa = ViewBag.TuKhoa, tuNgay = ViewBag.TuNgay, denNgay = ViewBag.DenNgay })
+
+        <div class="col-xl-3 col-md-6">
+            <div class="kpi-card cyan">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="kpi-icon-box cyan">
+                        <i class="bi bi-person-check-fill"></i>
+                    </div>
+                    <div>
+                        <div class="kpi-title">ĐÃ TUYỂN DỤNG</div>
+                        <div class="kpi-val mt-1" style="color: #1982a5;">@Model.SoDaTuyen</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="kpi-card indigo">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="kpi-icon-box indigo">
+                        <i class="bi bi-hourglass-split"></i>
+                    </div>
+                    <div>
+                        <div class="kpi-title">ĐANG XỬ LÝ</div>
+                        <div class="kpi-val mt-1" style="color: #1d4ed8;">@Model.SoDangXuLy</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="kpi-card blue">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="kpi-icon-box blue">
+                        <i class="bi bi-briefcase-fill"></i>
+                    </div>
+                    <div>
+                        <div class="kpi-title">VỊ TRÍ ĐANG TUYỂN</div>
+                        <div class="kpi-val mt-1" style="color: #2563eb;">@Model.SoViTriDangTuyen</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- ỨNG VIÊN ĐÃ TUYỂN -->
-    <div class="card border-0 mt-5 shadow-sm rounded-4">
-        <div class="card-header bg-success text-white fw-bold rounded-top">
-            Danh sách ứng viên đã được tuyển
+    <!-- 3. KHU VỰC HÀNG BIỂU ĐỒ 1 (Trạng thái: 3/11, Nguồn: 2/11, Xu hướng: 6/11) -->
+    <div class="chart-flex-row mb-4">
+        <!-- Trạng thái ứng viên (3/11) -->
+        <div class="row1-col-3">
+            <div class="dash-panel">
+                <div class="dash-panel-title">
+                    <span><span class="viti-dot lam"></span> Trạng thái ứng viên</span>
+                    <span class="text-muted small font-monospace" style="font-size: .72rem;">Theo giai đoạn</span>
+                </div>
+                <div class="chart-container-box">
+                    <canvas id="chartTrangThai"></canvas>
+                </div>
+            </div>
         </div>
-        <div class="card-body table-responsive" style="max-height: 350px; overflow-y: auto">
-            <table class="table table-bordered table-striped mb-0">
-                <thead class="table-success">
-                    <tr>
-                        <th>#</th>
-                        <th>Họ tên</th>
-                        <th>Email</th>
-                        <th>Vị trí</th>
-                        <th>Ngày nộp</th>
-                        <th>Trạng thái</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (Model.UngVienDaTuyen != null && Model.UngVienDaTuyen.Any())
-                    {
-                        int stt = 1;
-                        foreach (var uv in Model.UngVienDaTuyen)
-                        {
+
+        <!-- Nguồn ứng viên (2/11) -->
+        <div class="row1-col-2">
+            <div class="dash-panel">
+                <div class="dash-panel-title">
+                    <span><span class="viti-dot sky"></span> Nguồn ứng viên</span>
+                    <span class="text-muted small font-monospace" style="font-size: .72rem;">Kênh tuyển</span>
+                </div>
+                <div class="chart-container-box">
+                    <canvas id="chartNguon"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Xu hướng tuyển dụng (6/11 - chiếm phần diện tích lớn bên phải) -->
+        <div class="row1-col-6">
+            <div class="dash-panel">
+                <div class="dash-panel-title">
+                    <span><span class="viti-dot lam"></span> Xu hướng tuyển dụng</span>
+                    <span class="text-muted small font-monospace" style="font-size: .72rem;">Theo tháng</span>
+                </div>
+                <div class="chart-container-box">
+                    <canvas id="chartXuHuongThang"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. KHU VỰC HÀNG BIỂU ĐỒ 2 (Vị trí: 3/8, Phòng ban: 3/8, Biểu đồ tròn: 2/8) -->
+    <div class="chart-flex-row mb-4">
+        <!-- Biểu đồ cột các vị trí tuyển dụng (3/8) -->
+        <div class="row2-col-3a">
+            <div class="dash-panel">
+                <div class="dash-panel-title">
+                    <span><span class="viti-dot lam"></span> Vị trí ứng tuyển</span>
+                    <span class="text-muted small font-monospace" style="font-size: .72rem;">Số lượng theo vị trí</span>
+                </div>
+                <div class="chart-container-box">
+                    <canvas id="chartViTri"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Thống kê theo phòng ban (3/8) -->
+        <div class="row2-col-3b">
+            <div class="dash-panel">
+                <div class="dash-panel-title">
+                    <span><span class="viti-dot sky"></span> Thống kê theo phòng ban</span>
+                    <span class="text-muted small font-monospace" style="font-size: .72rem;">Khối phòng ban</span>
+                </div>
+                <div class="chart-container-box">
+                    <canvas id="chartPhongBan"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Biểu đồ tròn trạng thái tuyển dụng / Điểm đánh giá (2/8) -->
+        <div class="row2-col-2">
+            <div class="dash-panel">
+                <div class="dash-panel-title">
+                    <span><span class="viti-dot lam"></span> Phân loại đánh giá</span>
+                    <span class="text-muted small font-monospace" style="font-size: .72rem;">Phân khúc</span>
+                </div>
+                <div class="chart-container-box">
+                    <canvas id="chartDanhGia"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. KHU VỰC BẢNG DỮ LIỆU CHI TIẾT DƯỚI BẢNG -->
+    <div class="row g-3">
+        <!-- Vị trí tuyển thành công (Top 5) -->
+        <div class="col-lg-6">
+            <div class="dash-panel p-0 overflow-hidden">
+                <div class="p-3 border-bottom d-flex align-items-center justify-content-between bg-light">
+                    <h6 class="m-0 fw-bold text-dark fs-6">
+                        <i class="bi bi-trophy-fill text-warning me-1"></i> Vị trí tuyển thành công (Top 5)
+                    </h6>
+                    <span class="badge bg-primary rounded-pill" style="font-size: .72rem;">Top hiệu quả</span>
+                </div>
+                <div id="tableViTriTuyenThanhCong" class="p-2">
+                    @await Component.InvokeAsync("ViTriThanhCong", new { tuKhoa = ViewBag.TuKhoa, tuNgay = ViewBag.TuNgay, denNgay = ViewBag.DenNgay, trangThai = ViewBag.TrangThai, viTriId = ViewBag.ViTriId, phongBanId = ViewBag.PhongBanId })
+                </div>
+            </div>
+        </div>
+
+        <!-- Danh sách ứng viên đã được tuyển -->
+        <div class="col-lg-6">
+            <div class="dash-panel p-0 overflow-hidden">
+                <div class="p-3 border-bottom d-flex align-items-center justify-content-between bg-light">
+                    <h6 class="m-0 fw-bold text-dark fs-6">
+                        <i class="bi bi-check-circle-fill text-success me-1"></i> Danh sách ứng viên đã được tuyển
+                    </h6>
+                    <span class="badge bg-success rounded-pill" style="font-size: .72rem;">@(Model.UngVienDaTuyen?.Count ?? 0) ứng viên</span>
+                </div>
+                <div class="scrollable-table p-2">
+                    <table class="table table-hover table-bordered table-sm align-middle mb-0">
+                        <thead class="table-light sticky-top" style="font-size: .8rem; color: #475569;">
                             <tr>
-                                <td>@(stt++)</td>
-                                <td>@uv.HoTen</td>
-                                <td>@uv.Email</td>
-                                <td>@uv.TenViTri</td>
-                                <td>@uv.NgayNop.ToString("dd/MM/yyyy")</td>
-                                <td><span class="badge bg-success">Đã tuyển</span></td>
+                                <th class="text-center" style="width: 40px;">#</th>
+                                <th>Họ tên ứng viên</th>
+                                <th>Email</th>
+                                <th>Vị trí</th>
+                                <th class="text-center" style="width: 110px;">Ngày nộp</th>
+                                <th class="text-center" style="width: 95px;">Trạng thái</th>
                             </tr>
-                        }
-                    }
-                    else
-                    {
-                        <tr>
-                            <td colspan="6" class="text-center text-muted">Chưa có ứng viên nào được tuyển.</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+                        </thead>
+                        <tbody style="font-size: .8125rem;">
+                            @if (Model.UngVienDaTuyen != null && Model.UngVienDaTuyen.Any())
+                            {
+                                int stt = 1;
+                                foreach (var uv in Model.UngVienDaTuyen)
+                                {
+                                    <tr>
+                                        <td class="text-center text-muted fw-semibold">@(stt++)</td>
+                                        <td class="fw-bold text-dark">@uv.HoTen</td>
+                                        <td class="text-muted">@uv.Email</td>
+                                        <td class="fw-semibold text-primary">@uv.TenViTri</td>
+                                        <td class="text-center text-muted small">@uv.NgayNop.ToString("dd/MM/yyyy")</td>
+                                        <td class="text-center">
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1" style="font-size: .72rem; font-weight: 600;">
+                                                Đã tuyển
+                                            </span>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="6" class="text-center py-4 text-muted fst-italic">Chưa có ứng viên nào được tuyển trong hệ thống.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 </div>
